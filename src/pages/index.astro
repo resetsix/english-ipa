@@ -17,49 +17,66 @@ type FilterGroup = {
   options: readonly FilterOption[]
 }
 
-const filterGroups = [
-  {
-    label: '范围',
-    options: [
-      { id: 'all', label: '全部', field: 'all', value: 'all' },
-      { id: 'vowel', label: '元音', field: 'family', value: 'vowel' },
-      { id: 'consonant', label: '辅音', field: 'family', value: 'consonant' },
-    ],
-  },
-  {
-    label: '元音',
-    options: [
-      { id: 'monophthong', label: '单元音', field: 'category', value: 'monophthong' },
-      { id: 'diphthong', label: '双元音', field: 'category', value: 'diphthong' },
-      { id: 'long-monophthong', label: '长单元音', field: 'length', value: 'long' },
-      { id: 'short-monophthong', label: '短单元音', field: 'length', value: 'short' },
-    ],
-  },
-  {
-    label: '辅音方式',
-    ariaLabel: '辅音发音方式',
-    options: [
-      { id: 'plosive', label: '爆破音', field: 'manner', value: 'plosive' },
-      { id: 'fricative', label: '摩擦音', field: 'manner', value: 'fricative' },
-      { id: 'affricate', label: '破擦音', field: 'manner', value: 'affricate' },
-      { id: 'nasal', label: '鼻音', field: 'manner', value: 'nasal' },
-      { id: 'lateral', label: '舌侧音', field: 'manner', value: 'lateral' },
-      { id: 'semivowel', label: '半元音', field: 'manner', value: 'semivowel' },
-    ],
-  },
-  {
-    label: '清浊',
-    ariaLabel: '辅音清浊',
-    options: [
-      { id: 'voiceless', label: '清辅音', field: 'voicing', value: 'voiceless' },
-      { id: 'voiced', label: '浊辅音', field: 'voicing', value: 'voiced' },
-    ],
-  },
-] satisfies readonly FilterGroup[]
+const rangeFilterGroup: FilterGroup = {
+  label: '范围',
+  options: [
+    { id: 'all', label: '全部', field: 'all', value: 'all' },
+    { id: 'vowel', label: '元音', field: 'family', value: 'vowel' },
+    { id: 'consonant', label: '辅音', field: 'family', value: 'consonant' },
+  ],
+}
+const vowelFilterGroup: FilterGroup = {
+  label: '元音',
+  options: [
+    { id: 'monophthong', label: '单元音', field: 'category', value: 'monophthong' },
+    { id: 'diphthong', label: '双元音', field: 'category', value: 'diphthong' },
+    { id: 'long-monophthong', label: '长单元音', field: 'length', value: 'long' },
+    { id: 'short-monophthong', label: '短单元音', field: 'length', value: 'short' },
+  ],
+}
+const mannerFilterGroup: FilterGroup = {
+  label: '辅音方式',
+  ariaLabel: '辅音发音方式',
+  options: [
+    { id: 'plosive', label: '爆破音', field: 'manner', value: 'plosive' },
+    { id: 'fricative', label: '摩擦音', field: 'manner', value: 'fricative' },
+    { id: 'affricate', label: '破擦音', field: 'manner', value: 'affricate' },
+    { id: 'nasal', label: '鼻音', field: 'manner', value: 'nasal' },
+    { id: 'lateral', label: '舌侧音', field: 'manner', value: 'lateral' },
+    { id: 'semivowel', label: '半元音', field: 'manner', value: 'semivowel' },
+  ],
+}
+const voicingFilterGroup: FilterGroup = {
+  label: '清浊',
+  ariaLabel: '辅音清浊',
+  options: [
+    { id: 'voiceless', label: '清辅音', field: 'voicing', value: 'voiceless' },
+    { id: 'voiced', label: '浊辅音', field: 'voicing', value: 'voiced' },
+  ],
+}
 const filterRows = [
-  { label: '基础筛选', groups: [filterGroups[0], filterGroups[1]] },
-  { label: '辅音筛选', groups: [filterGroups[2], filterGroups[3]] },
+  { label: '基础筛选', groups: [rangeFilterGroup, vowelFilterGroup] },
+  { label: '辅音筛选', groups: [mannerFilterGroup, voicingFilterGroup] },
 ] satisfies readonly { label: string; groups: readonly FilterGroup[] }[]
+
+const cx = (...classes: string[]) => classes.join(' ')
+
+const panelClass = 'rounded-ipa border border-rule bg-panel shadow-ipa'
+const filterButtonClass =
+  "ipa-filter min-h-8.5 cursor-pointer touch-manipulation rounded-full border border-rule bg-filter-bg px-3.25 py-1.25 text-filter leading-compact text-muted transition-[background-color,border-color,color] duration-150 ease-in-out hover:border-rule-hover hover:bg-filter-hover hover:text-text focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring [&[aria-pressed='true']]:border-filter-selected-border [&[aria-pressed='true']]:bg-accent-soft [&[aria-pressed='true']]:font-bold [&[aria-pressed='true']]:text-accent"
+type PhoneticCategory = (typeof phoneticCategories)[number]
+const getGroupLayoutClass = (category: PhoneticCategory) => {
+  switch (category) {
+    case 'monophthong':
+      return 'col-span-7 max-ipa-tablet:col-span-full'
+    case 'diphthong':
+      return 'col-span-5 max-ipa-tablet:col-span-full'
+    case 'consonant':
+      return 'col-span-full'
+  }
+}
+const symbolButtonClass =
+  'ipa-symbol group/symbol relative inline-flex min-h-9 cursor-pointer touch-manipulation items-center justify-start gap-2 rounded-lg border border-rule bg-symbol-bg px-3.5 py-1 text-text transition-[background-color,border-color,color] duration-150 ease-in-out hover:border-rule-hover hover:bg-symbol-hover active:bg-symbol-active focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring [&.is-loading]:border-symbol-loading-border [&.is-loading]:bg-symbol-loading-bg [&.is-loading]:text-accent [&.is-playing]:border-symbol-playing-border [&.is-playing]:bg-symbol-playing-bg [&.is-playing]:text-accent'
 ---
 
 <!doctype html>
@@ -75,50 +92,81 @@ const filterRows = [
     <title>音标有谱</title>
   </head>
   <body>
-    <main class="ipa-shell">
-      <section class="ipa-hero" aria-labelledby="page-title">
+    <main
+      class="ipa-shell mx-auto flex min-h-screen w-ipa-shell flex-col pt-8.5 pb-7 max-ipa-tablet:w-ipa-shell-tablet max-ipa-tablet:pt-5.5"
+    >
+      <section
+        class="grid grid-cols-ipa-hero items-end gap-7 border-b border-rule pt-3 pb-7 max-ipa-tablet:grid-cols-1 max-ipa-tablet:gap-4.5"
+        aria-labelledby="page-title"
+      >
         <div>
-          <p class="ipa-kicker">pronunciation notes</p>
-          <h1 id="page-title">音标有谱</h1>
-          <p class="ipa-lead">点击音标听一遍，停下来模仿，再继续下一个声音。</p>
+          <p class="mb-2.5 font-mono text-kicker font-bold tracking-[0.08em] text-accent uppercase">
+            pronunciation notes
+          </p>
+          <h1 id="page-title" class="m-0 text-hero leading-hero font-hero tracking-normal">
+            音标有谱
+          </h1>
+          <p class="mt-3.5 max-w-136 text-lead text-muted">
+            点击音标听一遍，停下来模仿，再继续下一个声音。
+          </p>
         </div>
 
-        <aside class="ipa-summary" aria-label="音标概览">
-          <div class="ipa-summary__item">
-            <strong>{phoneticSymbols.length}</strong>
-            <span>个音标</span>
+        <aside class="grid grid-cols-2 gap-2.5 max-ipa-phone:grid-cols-1" aria-label="音标概览">
+          <div class={cx(panelClass, 'grid min-h-18.5 content-center px-4 py-3.5')}>
+            <strong class="text-summary-number leading-none">{phoneticSymbols.length}</strong>
+            <span class="text-summary-label text-muted">个音标</span>
           </div>
-          <div class="ipa-summary__item">
-            <strong>2</strong>
-            <span>大类</span>
+          <div class={cx(panelClass, 'grid min-h-18.5 content-center px-4 py-3.5')}>
+            <strong class="text-summary-number leading-none">2</strong>
+            <span class="text-summary-label text-muted">大类</span>
           </div>
-          <div class="ipa-status" id="status" role="status" aria-live="polite">
-            <span class="status-dot" aria-hidden="true"></span>
+          <div
+            class={cx(
+              'ipa-status',
+              panelClass,
+              'col-span-full flex min-h-14 items-center gap-3 px-4 py-3.25 text-muted',
+            )}
+            id="status"
+            role="status"
+            aria-live="polite"
+          >
+            <span class="status-dot size-2.25 flex-none rounded-full bg-faint" aria-hidden="true"
+            ></span>
             <span id="status-text">选择一个音标开始播放</span>
           </div>
         </aside>
       </section>
 
-      <section class="ipa-guide" aria-label="使用提示">
-        <p>建议顺序：先听元音，再听辅音；遇到相近音时连续点听，比较口型和气流差别。</p>
+      <section class={cx(panelClass, 'my-4.5 px-4.5 py-3.5')} aria-label="使用提示">
+        <p class="m-0 text-muted">
+          建议顺序：先听元音，再听辅音；遇到相近音时连续点听，比较口型和气流差别。
+        </p>
       </section>
 
-      <section class="ipa-filters" aria-label="音标筛选">
-        <div class="ipa-filters__groups">
+      <section
+        class="mb-4.5 flex items-center gap-3 max-ipa-tablet:flex-col max-ipa-tablet:items-start"
+        aria-label="音标筛选"
+      >
+        <div class="grid w-full min-w-0 flex-1 auto-rows-auto gap-2">
           {
             filterRows.map((row) => (
-              <div class="ipa-filter-row" aria-label={row.label}>
+              <div
+                class="flex min-w-0 flex-wrap items-center gap-x-4.5 gap-y-2 max-ipa-tablet:w-full max-ipa-tablet:flex-col max-ipa-tablet:items-start"
+                aria-label={row.label}
+              >
                 {row.groups.map((group) => (
                   <div
-                    class="ipa-filter-group"
+                    class="flex min-w-0 items-center gap-1.75 max-ipa-tablet:w-full max-ipa-tablet:flex-col max-ipa-tablet:items-start max-ipa-tablet:gap-1.5"
                     role="group"
                     aria-label={`按${group.ariaLabel ?? group.label}筛选`}
                   >
-                    <span class="ipa-filter-group__label">{group.label}</span>
-                    <div class="ipa-filter-group__controls">
+                    <span class="flex-none text-filter-label leading-compact font-bold whitespace-nowrap text-faint max-ipa-tablet:basis-auto max-ipa-tablet:text-left">
+                      {group.label}
+                    </span>
+                    <div class="flex min-w-0 flex-wrap gap-2">
                       {group.options.map((filter) => (
                         <button
-                          class="ipa-filter"
+                          class={filterButtonClass}
                           type="button"
                           data-filter={filter.id}
                           aria-pressed={filter.id === 'all' ? 'true' : 'false'}
@@ -135,7 +183,7 @@ const filterRows = [
         </div>
       </section>
 
-      <section class="ipa-board" aria-label="音标有谱">
+      <section class="grid grid-cols-12 gap-3.5" aria-label="音标有谱">
         {
           phoneticCategories.map((category) => {
             const label = categoryLabels[category]
@@ -144,27 +192,43 @@ const filterRows = [
 
             return (
               <section
-                class={`ipa-group ipa-group--${category}`}
+                class={cx(
+                  `ipa-group ipa-group--${category}`,
+                  panelClass,
+                  getGroupLayoutClass(category),
+                  'p-4.5',
+                )}
                 aria-labelledby={`${category}-title`}
                 data-category={category}
                 data-family={family}
                 data-default-title={label.title}
                 data-default-eyebrow={label.eyebrow}
               >
-                <header class="ipa-group__header">
+                <header class="mb-3.5 flex items-baseline justify-between gap-3.5 border-b border-rule pb-2.5">
                   <div>
-                    <p data-eyebrow>{label.eyebrow}</p>
-                    <h2 id={`${category}-title`} data-title>
+                    <p
+                      class="mb-1 font-mono text-group-eyebrow font-bold tracking-[0.08em] text-faint uppercase"
+                      data-eyebrow
+                    >
+                      {label.eyebrow}
+                    </p>
+                    <h2
+                      id={`${category}-title`}
+                      class="m-0 text-group-title leading-compact"
+                      data-title
+                    >
                       {label.title}
                     </h2>
                   </div>
-                  <span data-count>{items.length} 个</span>
+                  <span class="text-count whitespace-nowrap text-muted" data-count>
+                    {items.length} 个
+                  </span>
                 </header>
 
-                <div class="ipa-grid">
+                <div class="grid grid-cols-ipa-symbols gap-2 max-ipa-tablet:grid-cols-ipa-symbols-tablet max-ipa-phone:grid-cols-ipa-symbols-phone">
                   {items.map((item) => (
                     <button
-                      class="ipa-symbol"
+                      class={symbolButtonClass}
                       type="button"
                       data-symbol={item.symbol}
                       data-audio={item.audio}
@@ -177,10 +241,15 @@ const filterRows = [
                       aria-label={`播放 ${item.symbol}`}
                       title={`播放 ${item.symbol}`}
                     >
-                      <span class="ipa-symbol__play" aria-hidden="true">
+                      <span
+                        class="ipa-symbol__play relative inline-flex size-5 flex-none translate-y-px items-center justify-center rounded-full border border-play-border text-faint transition-[background-color,border-color,color] duration-150 ease-in-out group-hover/symbol:border-current group-hover/symbol:text-current group-[.is-loading]/symbol:border-current group-[.is-loading]/symbol:bg-play-loading-bg group-[.is-loading]/symbol:text-current group-[.is-playing]/symbol:border-current group-[.is-playing]/symbol:bg-play-playing-bg group-[.is-playing]/symbol:text-current"
+                        aria-hidden="true"
+                      >
                         <span class="ipa-symbol__play-icon" />
                       </span>
-                      <span class="ipa-symbol__text">{item.symbol}</span>
+                      <span class="font-ipa-symbol text-symbol leading-symbol inline-flex h-5 min-w-0 flex-initial items-center text-center font-bold tracking-normal">
+                        {item.symbol}
+                      </span>
                     </button>
                   ))}
                 </div>
@@ -190,9 +259,16 @@ const filterRows = [
         }
       </section>
 
-      <footer class="ipa-footer">
+      <footer
+        class="text-footer mt-auto flex flex-wrap justify-center gap-2 pt-7 pb-2.5 text-muted max-ipa-tablet:pt-5.5 max-ipa-tablet:pb-2"
+      >
         <span>词根词缀</span>
-        <a href="https://english-roots.netlify.app" target="_blank" rel="noreferrer">
+        <a
+          class="font-bold text-accent"
+          href="https://english-roots.netlify.app"
+          target="_blank"
+          rel="noreferrer"
+        >
           english-roots.netlify.app
         </a>
       </footer>
@@ -263,6 +339,7 @@ const filterRows = [
       } as const
 
       type FilterId = keyof typeof filterRules
+      type ClientFilterField = (typeof filterRules)[FilterId]['field']
 
       function resetStatus() {
         if (statusText) statusText.textContent = '选择一个音标开始播放'
@@ -289,11 +366,28 @@ const filterRows = [
         return null
       }
 
+      function getButtonFilterValue(button: HTMLButtonElement, field: ClientFilterField) {
+        switch (field) {
+          case 'family':
+            return button.dataset.family
+          case 'category':
+            return button.dataset.category
+          case 'length':
+            return button.dataset.length
+          case 'manner':
+            return button.dataset.manner
+          case 'voicing':
+            return button.dataset.voicing
+          case 'all':
+            return 'all'
+        }
+      }
+
       function matchesFilter(button: HTMLButtonElement, filter: string) {
         const rule = getFilterRule(filter)
         if (!rule) return false
         if (rule.field === 'all') return true
-        return button.dataset[rule.field] === rule.value
+        return getButtonFilterValue(button, rule.field) === rule.value
       }
 
       function updateGroupHeading(group: HTMLElement, filter: string) {
