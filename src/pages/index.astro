@@ -77,6 +77,7 @@ const getGroupLayoutClass = (category: PhoneticCategory) => {
 }
 const symbolButtonClass =
   'ipa-symbol group/symbol relative inline-flex min-h-9 cursor-pointer touch-manipulation items-center justify-start gap-2 rounded-lg border border-rule bg-symbol-bg px-3.5 py-1 text-text transition-[background-color,border-color,color] duration-150 ease-in-out hover:border-rule-hover hover:bg-symbol-hover active:bg-symbol-active focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring [&.is-loading]:border-symbol-loading-border [&.is-loading]:bg-symbol-loading-bg [&.is-loading]:text-accent [&.is-playing]:border-symbol-playing-border [&.is-playing]:bg-symbol-playing-bg [&.is-playing]:text-accent'
+const currentYear = new Date().getFullYear()
 ---
 
 <!doctype html>
@@ -275,6 +276,7 @@ const symbolButtonClass =
               english-roots.netlify.app
             </a>
           </span>
+          <span>©{currentYear} 未有期. All rights reserved.</span>
         </div>
       </footer>
     </main>
