@@ -1,0 +1,400 @@
+---
+import { categoryLabels, phoneticCategories, phoneticSymbols } from '@/data/phoneticSymbols'
+import '@/styles/global.css'
+
+const symbolsByCategory = Object.groupBy(phoneticSymbols, (item) => item.category)
+
+type FilterField = 'all' | 'family' | 'category' | 'length' | 'manner' | 'voicing'
+type FilterOption = {
+  id: string
+  label: string
+  field: FilterField
+  value: string
+}
+type FilterGroup = {
+  label: string
+  ariaLabel?: string
+  options: readonly FilterOption[]
+}
+
+const filterGroups = [
+  {
+    label: '范围',
+    options: [
+      { id: 'all', label: '全部', field: 'all', value: 'all' },
+      { id: 'vowel', label: '元音', field: 'family', value: 'vowel' },
+      { id: 'consonant', label: '辅音', field: 'family', value: 'consonant' },
+    ],
+  },
+  {
+    label: '元音',
+    options: [
+      { id: 'monophthong', label: '单元音', field: 'category', value: 'monophthong' },
+      { id: 'diphthong', label: '双元音', field: 'category', value: 'diphthong' },
+      { id: 'long-monophthong', label: '长单元音', field: 'length', value: 'long' },
+      { id: 'short-monophthong', label: '短单元音', field: 'length', value: 'short' },
+    ],
+  },
+  {
+    label: '辅音方式',
+    ariaLabel: '辅音发音方式',
+    options: [
+      { id: 'plosive', label: '爆破音', field: 'manner', value: 'plosive' },
+      { id: 'fricative', label: '摩擦音', field: 'manner', value: 'fricative' },
+      { id: 'affricate', label: '破擦音', field: 'manner', value: 'affricate' },
+      { id: 'nasal', label: '鼻音', field: 'manner', value: 'nasal' },
+      { id: 'lateral', label: '舌侧音', field: 'manner', value: 'lateral' },
+      { id: 'semivowel', label: '半元音', field: 'manner', value: 'semivowel' },
+    ],
+  },
+  {
+    label: '清浊',
+    ariaLabel: '辅音清浊',
+    options: [
+      { id: 'voiceless', label: '清辅音', field: 'voicing', value: 'voiceless' },
+      { id: 'voiced', label: '浊辅音', field: 'voicing', value: 'voiced' },
+    ],
+  },
+] satisfies readonly FilterGroup[]
+const filterRows = [
+  { label: '基础筛选', groups: [filterGroups[0], filterGroups[1]] },
+  { label: '辅音筛选', groups: [filterGroups[2], filterGroups[3]] },
+] satisfies readonly { label: string; groups: readonly FilterGroup[] }[]
+---
+
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="音标有谱：英语48个音标试听页，按元音、辅音、长短音、发音方式和清浊分类筛选。"
+    />
+    <link rel="preload" href="/fonts/LXGWWenKaiScreen.ttf" as="font" type="font/ttf" crossorigin />
+    <title>音标有谱</title>
+  </head>
+  <body>
+    <main class="ipa-shell">
+      <section class="ipa-hero" aria-labelledby="page-title">
+        <div>
+          <p class="ipa-kicker">pronunciation notes</p>
+          <h1 id="page-title">音标有谱</h1>
+          <p class="ipa-lead">点击音标听一遍，停下来模仿，再继续下一个声音。</p>
+        </div>
+
+        <aside class="ipa-summary" aria-label="音标概览">
+          <div class="ipa-summary__item">
+            <strong>{phoneticSymbols.length}</strong>
+            <span>个音标</span>
+          </div>
+          <div class="ipa-summary__item">
+            <strong>2</strong>
+            <span>大类</span>
+          </div>
+          <div class="ipa-status" id="status" role="status" aria-live="polite">
+            <span class="status-dot" aria-hidden="true"></span>
+            <span id="status-text">选择一个音标开始播放</span>
+          </div>
+        </aside>
+      </section>
+
+      <section class="ipa-guide" aria-label="使用提示">
+        <p>建议顺序：先听元音，再听辅音；遇到相近音时连续点听，比较口型和气流差别。</p>
+      </section>
+
+      <section class="ipa-filters" aria-label="音标筛选">
+        <div class="ipa-filters__groups">
+          {
+            filterRows.map((row) => (
+              <div class="ipa-filter-row" aria-label={row.label}>
+                {row.groups.map((group) => (
+                  <div
+                    class="ipa-filter-group"
+                    role="group"
+                    aria-label={`按${group.ariaLabel ?? group.label}筛选`}
+                  >
+                    <span class="ipa-filter-group__label">{group.label}</span>
+                    <div class="ipa-filter-group__controls">
+                      {group.options.map((filter) => (
+                        <button
+                          class="ipa-filter"
+                          type="button"
+                          data-filter={filter.id}
+                          aria-pressed={filter.id === 'all' ? 'true' : 'false'}
+                        >
+                          {filter.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ))
+          }
+        </div>
+      </section>
+
+      <section class="ipa-board" aria-label="音标有谱">
+        {
+          phoneticCategories.map((category) => {
+            const label = categoryLabels[category]
+            const items = symbolsByCategory[category] ?? []
+            const family = category === 'consonant' ? 'consonant' : 'vowel'
+
+            return (
+              <section
+                class={`ipa-group ipa-group--${category}`}
+                aria-labelledby={`${category}-title`}
+                data-category={category}
+                data-family={family}
+                data-default-title={label.title}
+                data-default-eyebrow={label.eyebrow}
+              >
+                <header class="ipa-group__header">
+                  <div>
+                    <p data-eyebrow>{label.eyebrow}</p>
+                    <h2 id={`${category}-title`} data-title>
+                      {label.title}
+                    </h2>
+                  </div>
+                  <span data-count>{items.length} 个</span>
+                </header>
+
+                <div class="ipa-grid">
+                  {items.map((item) => (
+                    <button
+                      class="ipa-symbol"
+                      type="button"
+                      data-symbol={item.symbol}
+                      data-audio={item.audio}
+                      data-family={item.family}
+                      data-category={item.category}
+                      data-length={item.length}
+                      data-manner={item.manner}
+                      data-voicing={item.voicing}
+                      aria-pressed="false"
+                      aria-label={`播放 ${item.symbol}`}
+                      title={`播放 ${item.symbol}`}
+                    >
+                      <span class="ipa-symbol__play" aria-hidden="true">
+                        <span class="ipa-symbol__play-icon" />
+                      </span>
+                      <span class="ipa-symbol__text">{item.symbol}</span>
+                    </button>
+                  ))}
+                </div>
+              </section>
+            )
+          })
+        }
+      </section>
+
+      <footer class="ipa-footer">
+        <span>词根词缀</span>
+        <a href="https://english-roots.netlify.app" target="_blank" rel="noreferrer">
+          english-roots.netlify.app
+        </a>
+      </footer>
+    </main>
+
+    <audio id="player" preload="none"></audio>
+
+    <script>
+      const player = document.querySelector<HTMLAudioElement>('#player')
+      const status = document.querySelector<HTMLElement>('#status')
+      const statusText = document.querySelector('#status-text')
+      const buttons = Array.from(document.querySelectorAll<HTMLButtonElement>('.ipa-symbol'))
+      const filterButtons = Array.from(document.querySelectorAll<HTMLButtonElement>('.ipa-filter'))
+      const groups = Array.from(document.querySelectorAll<HTMLElement>('.ipa-group'))
+      let activeButton: HTMLButtonElement | null = null
+
+      const filterRules = {
+        all: { field: 'all', value: 'all', useDefaultHeading: true },
+        vowel: { field: 'family', value: 'vowel', useDefaultHeading: true },
+        consonant: { field: 'family', value: 'consonant', useDefaultHeading: true },
+        monophthong: {
+          field: 'category',
+          value: 'monophthong',
+          title: '单元音',
+          eyebrow: 'Monophthongs',
+        },
+        diphthong: {
+          field: 'category',
+          value: 'diphthong',
+          title: '双元音',
+          eyebrow: 'Diphthongs',
+        },
+        'long-monophthong': {
+          field: 'length',
+          value: 'long',
+          title: '长单元音',
+          eyebrow: 'Long monophthongs',
+        },
+        'short-monophthong': {
+          field: 'length',
+          value: 'short',
+          title: '短单元音',
+          eyebrow: 'Short monophthongs',
+        },
+        plosive: { field: 'manner', value: 'plosive', title: '爆破音', eyebrow: 'Plosives' },
+        fricative: { field: 'manner', value: 'fricative', title: '摩擦音', eyebrow: 'Fricatives' },
+        affricate: { field: 'manner', value: 'affricate', title: '破擦音', eyebrow: 'Affricates' },
+        nasal: { field: 'manner', value: 'nasal', title: '鼻音', eyebrow: 'Nasals' },
+        lateral: {
+          field: 'manner',
+          value: 'lateral',
+          title: '舌侧音',
+          eyebrow: 'Lateral consonants',
+        },
+        semivowel: { field: 'manner', value: 'semivowel', title: '半元音', eyebrow: 'Semivowels' },
+        voiceless: {
+          field: 'voicing',
+          value: 'voiceless',
+          title: '清辅音',
+          eyebrow: 'Voiceless consonants',
+        },
+        voiced: {
+          field: 'voicing',
+          value: 'voiced',
+          title: '浊辅音',
+          eyebrow: 'Voiced consonants',
+        },
+      } as const
+
+      type FilterId = keyof typeof filterRules
+
+      function resetStatus() {
+        if (statusText) statusText.textContent = '选择一个音标开始播放'
+        if (status) status.dataset.state = 'idle'
+      }
+
+      function setErrorStatus(text: string) {
+        if (statusText) statusText.textContent = text
+        if (status) status.dataset.state = 'error'
+      }
+
+      function clearActive() {
+        if (activeButton) {
+          activeButton.classList.remove('is-loading')
+          activeButton.classList.remove('is-playing')
+          activeButton.setAttribute('aria-pressed', 'false')
+        }
+        activeButton = null
+      }
+
+      function getFilterRule(filter: string) {
+        if (filter in filterRules) return filterRules[filter as FilterId]
+        console.warn(`Unknown IPA filter: ${filter}`)
+        return null
+      }
+
+      function matchesFilter(button: HTMLButtonElement, filter: string) {
+        const rule = getFilterRule(filter)
+        if (!rule) return false
+        if (rule.field === 'all') return true
+        return button.dataset[rule.field] === rule.value
+      }
+
+      function updateGroupHeading(group: HTMLElement, filter: string) {
+        const rule = getFilterRule(filter)
+        const title = group.querySelector<HTMLElement>('[data-title]')
+        const eyebrow = group.querySelector<HTMLElement>('[data-eyebrow]')
+        const defaultTitle = group.dataset.defaultTitle ?? ''
+        const defaultEyebrow = group.dataset.defaultEyebrow ?? ''
+        const shouldUseDefault = !rule || 'useDefaultHeading' in rule
+
+        if (title)
+          title.textContent = shouldUseDefault ? defaultTitle : (rule.title ?? defaultTitle)
+        if (eyebrow)
+          eyebrow.textContent = shouldUseDefault ? defaultEyebrow : (rule.eyebrow ?? defaultEyebrow)
+      }
+
+      function applyFilter(filter: string) {
+        const shouldClearActive = activeButton ? !matchesFilter(activeButton, filter) : false
+
+        if (shouldClearActive) {
+          player?.pause()
+          if (player) player.currentTime = 0
+          clearActive()
+          resetStatus()
+        }
+
+        filterButtons.forEach((button) => {
+          button.setAttribute('aria-pressed', String(button.dataset.filter === filter))
+        })
+
+        groups.forEach((group) => {
+          const groupButtons = Array.from(group.querySelectorAll<HTMLButtonElement>('.ipa-symbol'))
+          const count = group.querySelector<HTMLElement>('[data-count]')
+          let visibleCount = 0
+
+          groupButtons.forEach((button) => {
+            const isVisible = matchesFilter(button, filter)
+            button.hidden = !isVisible
+            if (isVisible) visibleCount += 1
+          })
+
+          group.hidden = visibleCount === 0
+          updateGroupHeading(group, filter)
+          if (count) count.textContent = `${visibleCount} 个`
+        })
+      }
+
+      async function playSymbol(button: HTMLButtonElement) {
+        if (!player) return
+        if (button.hidden) return
+
+        const symbol = button.dataset.symbol ?? ''
+        const audio = button.dataset.audio
+        if (!audio) return
+
+        player.pause()
+        player.currentTime = 0
+        clearActive()
+
+        activeButton = button
+        button.classList.add('is-loading')
+        button.setAttribute('aria-pressed', 'true')
+        player.src = audio
+        resetStatus()
+
+        try {
+          await player.play()
+
+          if (activeButton !== button) {
+            return
+          }
+
+          button.classList.remove('is-loading')
+          button.classList.add('is-playing')
+        } catch {
+          clearActive()
+          setErrorStatus(`${symbol} 播放失败，请再试一次`)
+        }
+      }
+
+      buttons.forEach((button) => {
+        button.addEventListener('click', () => {
+          playSymbol(button)
+        })
+      })
+
+      filterButtons.forEach((button) => {
+        button.addEventListener('click', () => {
+          applyFilter(button.dataset.filter ?? 'all')
+        })
+      })
+
+      player?.addEventListener('ended', () => {
+        clearActive()
+        resetStatus()
+      })
+
+      player?.addEventListener('error', () => {
+        clearActive()
+        setErrorStatus('音频加载失败，请确认本地音频文件存在')
+      })
+    </script>
+  </body>
+</html>
