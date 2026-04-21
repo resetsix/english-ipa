@@ -12,7 +12,11 @@
 
 音频参考：
 
-- <https://github.com/think-ing/soundmark>
+- <https://github.com/boommanpro/phonetic_symbol_web/tree/main/words-voice>
+
+版权说明：
+
+本项目仅用于学习目的，音标内容版权归原网站所有。原网站：<https://www.yyybabc.com/>
 
 ## 本地运行
 
