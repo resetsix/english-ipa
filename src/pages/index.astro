@@ -8,8 +8,23 @@ import {
 import type { LetterPronunciationKind } from '@/data/phoneticSymbols'
 import '@/styles/global.css'
 
-const symbolsByCategory = Object.groupBy(phoneticSymbols, (item) => item.category)
-const phoneticSymbolsById = new Map(phoneticSymbols.map((item) => [item.id, item]))
+const getSymbolCore = (symbol: string) =>
+  symbol.startsWith('[') && symbol.endsWith(']') ? symbol.slice(1, -1) : symbol
+const defaultSymbolWrapper = 'bracket'
+const formatSymbol = (symbolCore: string, wrapper = defaultSymbolWrapper) =>
+  wrapper === 'slash' ? `/${symbolCore}/` : `[${symbolCore}]`
+const phoneticSymbolCards = phoneticSymbols.map((item) => {
+  const symbolCore = getSymbolCore(item.symbol)
+
+  return {
+    ...item,
+    symbolCore,
+    symbolDisplay: formatSymbol(symbolCore),
+    symbolSlashDisplay: formatSymbol(symbolCore, 'slash'),
+  }
+})
+const symbolsByCategory = Object.groupBy(phoneticSymbolCards, (item) => item.category)
+const phoneticSymbolsById = new Map(phoneticSymbolCards.map((item) => [item.id, item]))
 const letterPronunciationKindLabels = {
   common: '常见音',
   hard: '硬音',
@@ -35,6 +50,7 @@ const letterPronunciationCards = letterPronunciations.map((group) => ({
     if (item.phonemeId && !phoneme) throw new Error(`Unknown phoneme id: ${item.phonemeId}`)
     const symbol = item.symbol ?? phoneme?.symbol
     if (!symbol) throw new Error('Letter pronunciation needs either a phonemeId or a symbol')
+    const symbolCore = getSymbolCore(symbol)
     const kind = item.kind ?? 'common'
 
     return {
@@ -43,6 +59,9 @@ const letterPronunciationCards = letterPronunciations.map((group) => ({
       kindLabel: letterPronunciationKindLabels[kind],
       kindDescription: letterPronunciationKindDescriptions[kind],
       symbol,
+      symbolCore,
+      symbolDisplay: formatSymbol(symbolCore),
+      symbolSlashDisplay: formatSymbol(symbolCore, 'slash'),
       audio: phoneme?.audio,
     }
   }),
@@ -127,6 +146,8 @@ const getGroupLayoutClass = (category: PhoneticCategory) => {
 }
 const symbolButtonClass =
   'ipa-symbol group/symbol relative inline-flex min-h-9 cursor-pointer touch-manipulation items-center justify-start gap-2 rounded-lg border border-rule bg-symbol-bg px-3.5 py-1 text-text transition-[background-color,border-color,color] duration-150 ease-in-out hover:border-rule-hover hover:bg-symbol-hover active:bg-symbol-active focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring [&.is-loading]:border-symbol-loading-border [&.is-loading]:bg-symbol-loading-bg [&.is-loading]:text-accent [&.is-playing]:border-symbol-playing-border [&.is-playing]:bg-symbol-playing-bg [&.is-playing]:text-accent'
+const symbolWrapperButtonClass =
+  'min-h-8 cursor-pointer touch-manipulation px-3 py-1 text-filter leading-compact text-muted transition-[background-color,color] duration-150 ease-in-out hover:bg-filter-hover hover:text-text focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring'
 const repeatOptions = [1, 2, 3, 4, 5]
 const currentYear = new Date().getFullYear()
 ---
@@ -140,6 +161,14 @@ const currentYear = new Date().getFullYear()
       name="description"
       content="音标有谱：英语48个音标试听页，按元音、辅音、长短音、发音方式和清浊分类筛选。"
     />
+    <script is:inline>
+      try {
+        if (window.localStorage.getItem('english-ipa-symbol-wrapper') === 'slash')
+          document.documentElement.dataset.symbolWrapper = 'slash'
+      } catch {
+        // Keep the static default when storage is unavailable.
+      }
+    </script>
     <link rel="preload" href="/fonts/LXGWWenKaiScreen.ttf" as="font" type="font/ttf" crossorigin />
     <title>音标有谱</title>
   </head>
@@ -199,21 +228,50 @@ const currentYear = new Date().getFullYear()
         <p class="m-0 text-muted">
           建议顺序：先听元音，再听辅音；遇到相近音时连续点听，比较口型和气流差别。
         </p>
-        <label class="inline-flex flex-none items-center gap-2 text-filter text-muted">
-          <span class="font-bold whitespace-nowrap text-faint">循环</span>
-          <span class="group/repeat relative inline-flex items-center">
-            <select
-              id="repeat-count"
-              class="h-8 cursor-pointer appearance-none rounded-full border border-rule bg-filter-bg py-1 pr-8 pl-3 leading-compact text-text outline-none transition-[background-color,border-color] duration-150 ease-in-out hover:border-rule-hover hover:bg-filter-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
-              aria-label="每个音标自动循环播放次数"
+        <div class="flex flex-none flex-wrap items-center gap-3">
+          <div class="inline-flex items-center gap-2 text-filter text-muted">
+            <span class="font-bold whitespace-nowrap text-faint">展示</span>
+            <div
+              class="inline-flex overflow-hidden rounded-full border border-rule bg-filter-bg"
+              role="group"
+              aria-label="音标括号显示"
             >
-              {repeatOptions.map((count) => <option value={count}>{count} 次</option>)}
-            </select>
-            <span
-              class="pointer-events-none absolute top-1/2 right-3 size-2 translate-y-[-58%] rotate-45 border-r-[1.5px] border-b-[1.5px] border-current text-text"
-              aria-hidden="true"></span>
-          </span>
-        </label>
+              <button
+                class={symbolWrapperButtonClass}
+                type="button"
+                data-symbol-wrapper-option="bracket"
+                aria-pressed="true"
+                title="使用方括号显示音标"
+              >
+                [ ]
+              </button>
+              <button
+                class={symbolWrapperButtonClass}
+                type="button"
+                data-symbol-wrapper-option="slash"
+                aria-pressed="false"
+                title="使用斜线显示音标"
+              >
+                / /
+              </button>
+            </div>
+          </div>
+          <label class="inline-flex items-center gap-2 text-filter text-muted">
+            <span class="font-bold whitespace-nowrap text-faint">循环</span>
+            <span class="group/repeat relative inline-flex items-center">
+              <select
+                id="repeat-count"
+                class="h-8 cursor-pointer appearance-none rounded-full border border-rule bg-filter-bg py-1 pr-8 pl-3 leading-compact text-text outline-none transition-[background-color,border-color] duration-150 ease-in-out hover:border-rule-hover hover:bg-filter-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+                aria-label="每个音标自动循环播放次数"
+              >
+                {repeatOptions.map((count) => <option value={count}>{count} 次</option>)}
+              </select>
+              <span
+                class="pointer-events-none absolute top-1/2 right-3 size-2 translate-y-[-58%] rotate-45 border-r-[1.5px] border-b-[1.5px] border-current text-text"
+                aria-hidden="true"></span>
+            </span>
+          </label>
+        </div>
       </section>
 
       <section class={cx(panelClass, 'mb-4.5 p-4.5')} aria-labelledby="letter-pronunciation-title">
@@ -273,18 +331,25 @@ const currentYear = new Date().getFullYear()
                     class={letterSoundButtonClass}
                     type="button"
                     data-letter-sound={group.letter}
-                    data-symbol={item.symbol}
+                    data-symbol={item.symbolDisplay}
+                    data-symbol-core={item.symbolCore}
                     data-audio={item.audio}
                     data-examples={item.examples.join(', ')}
+                    data-kind-label={item.kindLabel}
+                    data-note={item.note}
                     disabled={!item.audio}
                     aria-pressed="false"
-                    aria-label={`${group.letter} 发 ${item.symbol}，${item.kindLabel}，例词 ${item.examples.join(', ')}${item.note ? `，${item.note}` : ''}`}
-                    title={`${group.letter} 发 ${item.symbol}，${item.kindLabel}，例词 ${item.examples.join(', ')}${item.note ? `，${item.note}` : ''}`}
+                    aria-label={`${group.letter} 发 ${item.symbolDisplay}，${item.kindLabel}，例词 ${item.examples.join(', ')}${item.note ? `，${item.note}` : ''}`}
+                    title={`${group.letter} 发 ${item.symbolDisplay}，${item.kindLabel}，例词 ${item.examples.join(', ')}${item.note ? `，${item.note}` : ''}`}
                   >
                     <span class="flex w-full items-baseline justify-between gap-3">
                       <span class="flex min-w-0 items-baseline gap-2">
-                        <span class="font-ipa-symbol text-symbol leading-symbol font-bold tracking-normal">
-                          {item.symbol}
+                        <span
+                          class="font-ipa-symbol text-symbol leading-symbol font-bold tracking-normal"
+                          data-symbol-text
+                        >
+                          <span data-symbol-text-bracket>{item.symbolDisplay}</span>
+                          <span data-symbol-text-slash>{item.symbolSlashDisplay}</span>
                         </span>
                         <span
                           class={letterKindBadgeClass}
@@ -405,7 +470,7 @@ const currentYear = new Date().getFullYear()
                     <button
                       class={symbolButtonClass}
                       type="button"
-                      data-symbol={item.symbol}
+                      data-symbol={item.symbolDisplay}
                       data-audio={item.audio}
                       data-family={item.family}
                       data-category={item.category}
@@ -413,9 +478,10 @@ const currentYear = new Date().getFullYear()
                       data-manner={item.manner}
                       data-voicing={item.voicing}
                       data-letters={item.letters}
+                      data-symbol-core={item.symbolCore}
                       aria-pressed="false"
-                      aria-label={`播放 ${item.symbol}，常见拼写 ${item.letters}`}
-                      title={`播放 ${item.symbol}，常见拼写 ${item.letters}`}
+                      aria-label={`播放 ${item.symbolDisplay}，常见拼写 ${item.letters}`}
+                      title={`播放 ${item.symbolDisplay}，常见拼写 ${item.letters}`}
                     >
                       <span
                         class="pointer-events-none absolute top-px right-1 font-sans text-[0.5rem] leading-none font-normal tracking-normal whitespace-nowrap text-faint opacity-45"
@@ -429,8 +495,12 @@ const currentYear = new Date().getFullYear()
                       >
                         <span class="ipa-symbol__play-icon" />
                       </span>
-                      <span class="font-ipa-symbol text-symbol leading-symbol inline-flex h-5 min-w-0 flex-initial items-center text-center font-bold tracking-normal">
-                        {item.symbol}
+                      <span
+                        class="font-ipa-symbol text-symbol leading-symbol inline-flex h-5 min-w-0 flex-initial items-center text-center font-bold tracking-normal"
+                        data-symbol-text
+                      >
+                        <span data-symbol-text-bracket>{item.symbolDisplay}</span>
+                        <span data-symbol-text-slash>{item.symbolSlashDisplay}</span>
                       </span>
                     </button>
                   ))}
@@ -492,11 +562,16 @@ const currentYear = new Date().getFullYear()
       const letterPanels = Array.from(document.querySelectorAll<HTMLElement>('.letter-panel'))
       const groups = Array.from(document.querySelectorAll<HTMLElement>('.ipa-group'))
       const repeatSelect = document.querySelector<HTMLSelectElement>('#repeat-count')
+      const symbolWrapperButtons = Array.from(
+        document.querySelectorAll<HTMLButtonElement>('[data-symbol-wrapper-option]'),
+      )
       let activeButton: HTMLButtonElement | null = null
       let activePlayToken = 0
       let activeRepeatIndex = 0
       let repeatCount = 1
+      let symbolWrapper: SymbolWrapper = 'bracket'
       const repeatStorageKey = 'english-ipa-repeat-count'
+      const symbolWrapperStorageKey = 'english-ipa-symbol-wrapper'
 
       const filterRules = {
         all: { field: 'all', value: 'all', useDefaultHeading: true },
@@ -553,6 +628,92 @@ const currentYear = new Date().getFullYear()
 
       type FilterId = keyof typeof filterRules
       type ClientFilterField = (typeof filterRules)[FilterId]['field']
+      type SymbolWrapper = 'bracket' | 'slash'
+
+      function getValidSymbolWrapper(value: unknown): SymbolWrapper {
+        return value === 'slash' ? 'slash' : 'bracket'
+      }
+
+      function formatSymbol(symbolCore: string) {
+        return symbolWrapper === 'bracket' ? `[${symbolCore}]` : `/${symbolCore}/`
+      }
+
+      function getButtonSymbol(button: HTMLButtonElement) {
+        const symbolCore = button.dataset.symbolCore
+        return symbolCore ? formatSymbol(symbolCore) : (button.dataset.symbol ?? '')
+      }
+
+      function updateButtonLabel(button: HTMLButtonElement, symbol: string) {
+        const letter = button.dataset.letterSound
+        const examples = button.dataset.examples
+
+        if (letter) {
+          const kindLabel = button.dataset.kindLabel
+          const note = button.dataset.note
+          let label = `${letter} 发 ${symbol}`
+
+          if (kindLabel) label += `，${kindLabel}`
+          if (examples) label += `，例词 ${examples}`
+          if (note) label += `，${note}`
+
+          button.setAttribute('aria-label', label)
+          button.title = label
+          return
+        }
+
+        const letters = button.dataset.letters
+        const label = letters ? `播放 ${symbol}，常见拼写 ${letters}` : `播放 ${symbol}`
+        button.setAttribute('aria-label', label)
+        button.title = label
+      }
+
+      function updateButtonSymbol(button: HTMLButtonElement) {
+        const symbol = getButtonSymbol(button)
+        const symbolText = button.querySelector<HTMLElement>('[data-symbol-text]')
+
+        button.dataset.symbol = symbol
+        if (symbolText) symbolText.textContent = symbol
+        updateButtonLabel(button, symbol)
+      }
+
+      function updateSymbolDisplay() {
+        ;[...buttons, ...letterSoundButtons].forEach(updateButtonSymbol)
+        symbolWrapperButtons.forEach((button) => {
+          button.setAttribute(
+            'aria-pressed',
+            String(button.dataset.symbolWrapperOption === symbolWrapper),
+          )
+        })
+
+        if (activeButton?.classList.contains('is-playing')) {
+          setPlayingStatus(activeButton)
+        }
+      }
+
+      function loadSymbolWrapper() {
+        try {
+          return getValidSymbolWrapper(window.localStorage.getItem(symbolWrapperStorageKey))
+        } catch {
+          return 'bracket'
+        }
+      }
+
+      function setSymbolWrapper(value: unknown, shouldPersist = true) {
+        symbolWrapper = getValidSymbolWrapper(value)
+        if (symbolWrapper === 'slash') {
+          document.documentElement.dataset.symbolWrapper = 'slash'
+        } else {
+          delete document.documentElement.dataset.symbolWrapper
+        }
+        updateSymbolDisplay()
+
+        if (!shouldPersist) return
+        try {
+          window.localStorage.setItem(symbolWrapperStorageKey, symbolWrapper)
+        } catch {
+          // Storage can be unavailable in private browsing; display switching should still work.
+        }
+      }
 
       function resetStatus() {
         if (statusText) statusText.textContent = '选择一个音标开始播放'
@@ -565,7 +726,7 @@ const currentYear = new Date().getFullYear()
       }
 
       function setPlayingStatus(button: HTMLButtonElement) {
-        const symbol = button.dataset.symbol ?? ''
+        const symbol = getButtonSymbol(button)
         const letter = button.dataset.letterSound
         const examples = button.dataset.examples
 
@@ -717,7 +878,6 @@ const currentYear = new Date().getFullYear()
         if (!player) return
         if (button.hidden) return
 
-        const symbol = button.dataset.symbol ?? ''
         const audio = button.dataset.audio
         if (!audio) return
 
@@ -745,7 +905,7 @@ const currentYear = new Date().getFullYear()
         } catch {
           if (activePlayToken !== playToken) return
           clearActive()
-          setErrorStatus(`${symbol} 播放失败，请再试一次`)
+          setErrorStatus(`${getButtonSymbol(button)} 播放失败，请再试一次`)
         }
       }
 
@@ -773,10 +933,17 @@ const currentYear = new Date().getFullYear()
         })
       })
 
+      symbolWrapperButtons.forEach((button) => {
+        button.addEventListener('click', () => {
+          setSymbolWrapper(button.dataset.symbolWrapperOption)
+        })
+      })
+
       repeatSelect?.addEventListener('change', () => {
         setRepeatCount(repeatSelect.value)
       })
 
+      setSymbolWrapper(loadSymbolWrapper(), false)
       setRepeatCount(loadRepeatCount(), false)
 
       player?.addEventListener('ended', async () => {
@@ -794,7 +961,6 @@ const currentYear = new Date().getFullYear()
         }
 
         const button = activeButton
-        const symbol = button.dataset.symbol ?? ''
         const playToken = activePlayToken
         activeRepeatIndex += 1
         player.currentTime = 0
@@ -813,7 +979,7 @@ const currentYear = new Date().getFullYear()
         } catch {
           if (activePlayToken !== playToken) return
           clearActive()
-          setErrorStatus(`${symbol} 播放失败，请再试一次`)
+          setErrorStatus(`${getButtonSymbol(button)} 播放失败，请再试一次`)
         }
       })
 

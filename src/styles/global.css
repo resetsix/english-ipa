@@ -116,6 +116,18 @@ a:hover {
   text-decoration-style: solid;
 }
 
+html:not([data-symbol-wrapper='slash']) [data-symbol-text-slash],
+html[data-symbol-wrapper='slash'] [data-symbol-text-bracket] {
+  display: none;
+}
+
+html:not([data-symbol-wrapper='slash']) [data-symbol-wrapper-option='bracket'],
+html[data-symbol-wrapper='slash'] [data-symbol-wrapper-option='slash'] {
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: 700;
+}
+
 .ipa-status[data-state='error'] {
   border-color: color-mix(in srgb, var(--danger) 42%, var(--rule));
   color: var(--danger);
