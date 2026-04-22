@@ -201,13 +201,18 @@ const currentYear = new Date().getFullYear()
         </p>
         <label class="inline-flex flex-none items-center gap-2 text-filter text-muted">
           <span class="font-bold whitespace-nowrap text-faint">循环</span>
-          <select
-            id="repeat-count"
-            class="h-8 cursor-pointer rounded-full border border-rule bg-filter-bg px-3 py-1 leading-compact text-text outline-none transition-[background-color,border-color] duration-150 ease-in-out hover:border-rule-hover hover:bg-filter-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
-            aria-label="每个音标自动循环播放次数"
-          >
-            {repeatOptions.map((count) => <option value={count}>{count} 次</option>)}
-          </select>
+          <span class="group/repeat relative inline-flex items-center">
+            <select
+              id="repeat-count"
+              class="h-8 cursor-pointer appearance-none rounded-full border border-rule bg-filter-bg py-1 pr-8 pl-3 leading-compact text-text outline-none transition-[background-color,border-color] duration-150 ease-in-out hover:border-rule-hover hover:bg-filter-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+              aria-label="每个音标自动循环播放次数"
+            >
+              {repeatOptions.map((count) => <option value={count}>{count} 次</option>)}
+            </select>
+            <span
+              class="pointer-events-none absolute top-1/2 right-3 size-2 translate-y-[-58%] rotate-45 border-r-[1.5px] border-b-[1.5px] border-current text-text"
+              aria-hidden="true"></span>
+          </span>
         </label>
       </section>
 
