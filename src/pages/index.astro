@@ -145,7 +145,7 @@ const getGroupLayoutClass = (category: PhoneticCategory) => {
   }
 }
 const symbolButtonClass =
-  'ipa-symbol group/symbol relative inline-flex min-h-9 cursor-pointer touch-manipulation items-center justify-start gap-2 rounded-lg border border-rule bg-symbol-bg px-3.5 py-1 text-text transition-[background-color,border-color,color] duration-150 ease-in-out hover:border-rule-hover hover:bg-symbol-hover active:bg-symbol-active focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring [&.is-loading]:border-symbol-loading-border [&.is-loading]:bg-symbol-loading-bg [&.is-loading]:text-accent [&.is-playing]:border-symbol-playing-border [&.is-playing]:bg-symbol-playing-bg [&.is-playing]:text-accent'
+  'ipa-symbol group/symbol relative inline-flex min-h-9 w-full cursor-pointer touch-manipulation items-center justify-start gap-2 rounded-lg border border-rule bg-symbol-bg px-3.5 py-1 text-text transition-[background-color,border-color,color] duration-150 ease-in-out hover:border-rule-hover hover:bg-symbol-hover active:bg-symbol-active focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring [&.is-loading]:border-symbol-loading-border [&.is-loading]:bg-symbol-loading-bg [&.is-loading]:text-accent [&.is-playing]:border-symbol-playing-border [&.is-playing]:bg-symbol-playing-bg [&.is-playing]:text-accent'
 const symbolWrapperButtonClass =
   'min-h-8 cursor-pointer touch-manipulation px-3 py-1 text-filter leading-compact text-muted transition-[background-color,color] duration-150 ease-in-out hover:bg-filter-hover hover:text-text focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring'
 const repeatOptions = [1, 2, 3, 4, 5]
@@ -465,44 +465,51 @@ const currentYear = new Date().getFullYear()
                   </span>
                 </header>
 
-                <div class="grid grid-cols-ipa-symbols gap-2 max-ipa-tablet:grid-cols-ipa-symbols-tablet max-ipa-phone:grid-cols-ipa-symbols-phone">
+                <div class="grid grid-cols-ipa-symbols gap-2.75 max-ipa-tablet:grid-cols-ipa-symbols-tablet max-ipa-phone:grid-cols-ipa-symbols-phone">
                   {items.map((item) => (
-                    <button
-                      class={symbolButtonClass}
-                      type="button"
-                      data-symbol={item.symbolDisplay}
-                      data-audio={item.audio}
-                      data-family={item.family}
-                      data-category={item.category}
-                      data-length={item.length}
-                      data-manner={item.manner}
-                      data-voicing={item.voicing}
-                      data-letters={item.letters}
-                      data-symbol-core={item.symbolCore}
-                      aria-pressed="false"
-                      aria-label={`播放 ${item.symbolDisplay}，常见拼写 ${item.letters}`}
-                      title={`播放 ${item.symbolDisplay}，常见拼写 ${item.letters}`}
-                    >
-                      <span
-                        class="pointer-events-none absolute top-px right-1 font-sans text-[0.5rem] leading-none font-normal tracking-normal whitespace-nowrap text-faint opacity-45"
+                    <div class="ipa-symbol-shell relative pt-2.75">
+                      <div
+                        class="pointer-events-none absolute inset-x-1 top-0 flex items-start gap-1 overflow-hidden"
                         aria-hidden="true"
                       >
-                        {item.letters}
-                      </span>
-                      <span
-                        class="ipa-symbol__play relative inline-flex size-5 flex-none translate-y-px items-center justify-center rounded-full border border-play-border text-faint transition-[background-color,border-color,color] duration-150 ease-in-out group-hover/symbol:border-current group-hover/symbol:text-current group-[.is-loading]/symbol:border-current group-[.is-loading]/symbol:bg-play-loading-bg group-[.is-loading]/symbol:text-current group-[.is-playing]/symbol:border-current group-[.is-playing]/symbol:bg-play-playing-bg group-[.is-playing]/symbol:text-current"
-                        aria-hidden="true"
+                        <span class="min-w-0 flex-1 overflow-hidden font-sans text-[0.55rem] leading-none font-bold tracking-normal text-ellipsis whitespace-nowrap text-faint opacity-70">
+                          {item.sourceLabel}
+                        </span>
+                        <span class="ml-auto max-w-full shrink-0 overflow-hidden font-sans text-[0.58rem] leading-none font-normal tracking-normal text-ellipsis whitespace-nowrap text-muted opacity-65">
+                          {item.letters}
+                        </span>
+                      </div>
+                      <button
+                        class={symbolButtonClass}
+                        type="button"
+                        data-symbol={item.symbolDisplay}
+                        data-audio={item.audio}
+                        data-family={item.family}
+                        data-category={item.category}
+                        data-length={item.length}
+                        data-manner={item.manner}
+                        data-voicing={item.voicing}
+                        data-letters={item.letters}
+                        data-symbol-core={item.symbolCore}
+                        aria-pressed="false"
+                        aria-label={`播放 ${item.symbolDisplay}，${item.sourceLabel}，常见拼写 ${item.letters}`}
+                        title={`播放 ${item.symbolDisplay}，${item.sourceLabel}，常见拼写 ${item.letters}`}
                       >
-                        <span class="ipa-symbol__play-icon" />
-                      </span>
-                      <span
-                        class="font-ipa-symbol text-symbol leading-symbol inline-flex h-5 min-w-0 flex-initial items-center text-center font-bold tracking-normal"
-                        data-symbol-text
-                      >
-                        <span data-symbol-text-bracket>{item.symbolDisplay}</span>
-                        <span data-symbol-text-slash>{item.symbolSlashDisplay}</span>
-                      </span>
-                    </button>
+                        <span
+                          class="ipa-symbol__play relative inline-flex size-5 flex-none translate-y-px items-center justify-center rounded-full border border-play-border text-faint transition-[background-color,border-color,color] duration-150 ease-in-out group-hover/symbol:border-current group-hover/symbol:text-current group-[.is-loading]/symbol:border-current group-[.is-loading]/symbol:bg-play-loading-bg group-[.is-loading]/symbol:text-current group-[.is-playing]/symbol:border-current group-[.is-playing]/symbol:bg-play-playing-bg group-[.is-playing]/symbol:text-current"
+                          aria-hidden="true"
+                        >
+                          <span class="ipa-symbol__play-icon" />
+                        </span>
+                        <span
+                          class="font-ipa-symbol text-symbol leading-symbol inline-flex h-5 min-w-0 flex-initial items-center text-center font-bold tracking-normal"
+                          data-symbol-text
+                        >
+                          <span data-symbol-text-bracket>{item.symbolDisplay}</span>
+                          <span data-symbol-text-slash>{item.symbolSlashDisplay}</span>
+                        </span>
+                      </button>
+                    </div>
                   ))}
                 </div>
               </section>
@@ -864,7 +871,9 @@ const currentYear = new Date().getFullYear()
 
           groupButtons.forEach((button) => {
             const isVisible = matchesFilter(button, filter)
+            const shell = button.closest<HTMLElement>('.ipa-symbol-shell')
             button.hidden = !isVisible
+            if (shell) shell.hidden = !isVisible
             if (isVisible) visibleCount += 1
           })
 

@@ -33,6 +33,7 @@ export type PhoneticSymbol = {
   id: string
   symbol: string
   letters: string
+  sourceLabel: string
   category: PhoneticCategory
   family: PhoneticFamily
   audio: string
@@ -107,7 +108,17 @@ const phoneticLetterLabels: Record<string, string> = {
   'consonant-y': 'y',
 }
 
-const phoneticSymbolData: Omit<PhoneticSymbol, 'letters'>[] = [
+const getSourceLabel = (letters: string) => {
+  const firstSpelling = letters.split('/')[0]?.trim() ?? ''
+  if (/^[a-z]$/i.test(firstSpelling)) {
+    const letter = firstSpelling.toLowerCase()
+    return `${letter.toUpperCase()}/${letter}`
+  }
+
+  return '独立音标'
+}
+
+const phoneticSymbolData: Omit<PhoneticSymbol, 'letters' | 'sourceLabel'>[] = [
   {
     id: 'vowel-i-long',
     symbol: '[iː]',
@@ -517,6 +528,7 @@ const phoneticSymbolData: Omit<PhoneticSymbol, 'letters'>[] = [
 export const phoneticSymbols = phoneticSymbolData.map((item) => ({
   ...item,
   letters: phoneticLetterLabels[item.id] ?? '',
+  sourceLabel: getSourceLabel(phoneticLetterLabels[item.id] ?? ''),
 })) satisfies PhoneticSymbol[]
 
 export const phoneticCategories: PhoneticCategory[] = ['monophthong', 'diphthong', 'consonant']
