@@ -5,10 +5,29 @@ import {
   phoneticCategories,
   phoneticSymbols,
 } from '@/data/phoneticSymbols'
+import type { LetterPronunciationKind } from '@/data/phoneticSymbols'
 import '@/styles/global.css'
 
 const symbolsByCategory = Object.groupBy(phoneticSymbols, (item) => item.category)
 const phoneticSymbolsById = new Map(phoneticSymbols.map((item) => [item.id, item]))
+const letterPronunciationKindLabels = {
+  common: '常见音',
+  hard: '硬音',
+  soft: '软音',
+  reduced: '弱读',
+  cluster: '组合音',
+  silent: '静音',
+  minor: '少数词',
+} satisfies Record<LetterPronunciationKind, string>
+const letterPronunciationKindDescriptions = {
+  common: '最常见或最基础的读法',
+  hard: '硬音：C/G 后接 a、o、u 或辅音时，常读 [k]/[g]，如 cat、go',
+  soft: '软音：C/G 后接 e、i、y 时，常读 [s]/[dʒ]，如 city、giant',
+  reduced: '弱读：非重读时声音变轻，常变成 [ə]，如 about',
+  cluster: '组合音：两个音连续读出，不是单个音频，如 box 中的 [ks]',
+  silent: '静音：字母写出来但通常不发音，如 write 中的 w',
+  minor: '少数词：只出现在少量常见词中的读法，如 xylophone',
+} satisfies Record<LetterPronunciationKind, string>
 const letterPronunciationCards = letterPronunciations.map((group) => ({
   ...group,
   pronunciations: group.pronunciations.map((item) => {
@@ -16,9 +35,13 @@ const letterPronunciationCards = letterPronunciations.map((group) => ({
     if (item.phonemeId && !phoneme) throw new Error(`Unknown phoneme id: ${item.phonemeId}`)
     const symbol = item.symbol ?? phoneme?.symbol
     if (!symbol) throw new Error('Letter pronunciation needs either a phonemeId or a symbol')
+    const kind = item.kind ?? 'common'
 
     return {
       ...item,
+      kind,
+      kindLabel: letterPronunciationKindLabels[kind],
+      kindDescription: letterPronunciationKindDescriptions[kind],
       symbol,
       audio: phoneme?.audio,
     }
@@ -89,6 +112,8 @@ const letterButtonClass =
   "letter-tab flex size-9 cursor-pointer touch-manipulation items-center justify-center rounded-full border border-rule bg-filter-bg font-mono text-filter leading-none font-bold text-muted transition-[background-color,border-color,color] duration-150 ease-in-out hover:border-rule-hover hover:bg-filter-hover hover:text-text focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring [&[aria-pressed='true']]:border-filter-selected-border [&[aria-pressed='true']]:bg-accent-soft [&[aria-pressed='true']]:text-accent"
 const letterSoundButtonClass =
   'letter-sound group/sound relative flex min-h-19 cursor-pointer touch-manipulation flex-col items-start justify-between gap-2 rounded-lg border border-rule bg-symbol-bg px-3.5 py-3 text-left text-text transition-[background-color,border-color,color] duration-150 ease-in-out hover:border-rule-hover hover:bg-symbol-hover active:bg-symbol-active focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring disabled:cursor-default disabled:opacity-100 disabled:hover:border-rule disabled:hover:bg-symbol-bg [&.is-loading]:border-symbol-loading-border [&.is-loading]:bg-symbol-loading-bg [&.is-loading]:text-accent [&.is-playing]:border-symbol-playing-border [&.is-playing]:bg-symbol-playing-bg [&.is-playing]:text-accent'
+const letterKindBadgeClass =
+  'rounded-full border border-rule bg-filter-bg px-2 py-0.5 text-filter-label leading-none font-bold whitespace-nowrap text-faint'
 type PhoneticCategory = (typeof phoneticCategories)[number]
 const getGroupLayoutClass = (category: PhoneticCategory) => {
   switch (category) {
@@ -248,12 +273,21 @@ const currentYear = new Date().getFullYear()
                     data-examples={item.examples.join(', ')}
                     disabled={!item.audio}
                     aria-pressed="false"
-                    aria-label={`${group.letter} 发 ${item.symbol}，例词 ${item.examples.join(', ')}${item.note ? `，${item.note}` : ''}`}
-                    title={`${group.letter} 发 ${item.symbol}，例词 ${item.examples.join(', ')}${item.note ? `，${item.note}` : ''}`}
+                    aria-label={`${group.letter} 发 ${item.symbol}，${item.kindLabel}，例词 ${item.examples.join(', ')}${item.note ? `，${item.note}` : ''}`}
+                    title={`${group.letter} 发 ${item.symbol}，${item.kindLabel}，例词 ${item.examples.join(', ')}${item.note ? `，${item.note}` : ''}`}
                   >
                     <span class="flex w-full items-baseline justify-between gap-3">
-                      <span class="font-ipa-symbol text-symbol leading-symbol font-bold tracking-normal">
-                        {item.symbol}
+                      <span class="flex min-w-0 items-baseline gap-2">
+                        <span class="font-ipa-symbol text-symbol leading-symbol font-bold tracking-normal">
+                          {item.symbol}
+                        </span>
+                        <span
+                          class={letterKindBadgeClass}
+                          title={item.kindDescription}
+                          aria-label={`${item.kindLabel}：${item.kindDescription}`}
+                        >
+                          {item.kindLabel}
+                        </span>
                       </span>
                       {item.audio ? (
                         <span class="ipa-symbol__play relative inline-flex size-5 flex-none items-center justify-center rounded-full border border-play-border text-faint transition-[background-color,border-color,color] duration-150 ease-in-out group-hover/sound:border-current group-hover/sound:text-current group-[.is-loading]/sound:border-current group-[.is-loading]/sound:bg-play-loading-bg group-[.is-loading]/sound:text-current group-[.is-playing]/sound:border-current group-[.is-playing]/sound:bg-play-playing-bg group-[.is-playing]/sound:text-current">

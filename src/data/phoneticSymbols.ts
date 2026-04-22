@@ -9,11 +9,20 @@ export type ConsonantManner =
   | 'lateral'
   | 'semivowel'
 export type ConsonantVoicing = 'voiceless' | 'voiced'
+export type LetterPronunciationKind =
+  | 'common'
+  | 'hard'
+  | 'soft'
+  | 'reduced'
+  | 'cluster'
+  | 'silent'
+  | 'minor'
 export type LetterPronunciation = {
   phonemeId?: string
   symbol?: string
   examples: string[]
   note?: string
+  kind?: LetterPronunciationKind
 }
 export type LetterPronunciationGroup = {
   letter: string
@@ -520,7 +529,11 @@ export const letterPronunciations: LetterPronunciationGroup[] = [
       { phonemeId: 'vowel-ae-short', examples: ['cat', 'apple', 'bag', 'hat'] },
       { phonemeId: 'vowel-a-long', examples: ['car', 'father', 'class', 'park'] },
       { phonemeId: 'vowel-aw-long', examples: ['all', 'water', 'talk', 'ball'] },
-      { phonemeId: 'vowel-schwa-short', examples: ['about', 'ago', 'sofa', 'banana'] },
+      {
+        phonemeId: 'vowel-schwa-short',
+        examples: ['about', 'ago', 'sofa', 'banana'],
+        kind: 'reduced',
+      },
     ],
   },
   {
@@ -530,8 +543,8 @@ export const letterPronunciations: LetterPronunciationGroup[] = [
   {
     letter: 'C',
     pronunciations: [
-      { phonemeId: 'consonant-k', examples: ['cat', 'cup', 'music', 'coat'] },
-      { phonemeId: 'consonant-s', examples: ['city', 'cell', 'face', 'nice'] },
+      { phonemeId: 'consonant-k', examples: ['cat', 'cup', 'music', 'coat'], kind: 'hard' },
+      { phonemeId: 'consonant-s', examples: ['city', 'cell', 'face', 'nice'], kind: 'soft' },
       { phonemeId: 'consonant-ch', examples: ['cello', 'church', 'much', 'child'] },
     ],
   },
@@ -547,7 +560,11 @@ export const letterPronunciations: LetterPronunciationGroup[] = [
     pronunciations: [
       { phonemeId: 'vowel-e-short', examples: ['bed', 'pen', 'egg', 'red'] },
       { phonemeId: 'vowel-i-long', examples: ['he', 'she', 'even', 'me'] },
-      { phonemeId: 'vowel-schwa-short', examples: ['open', 'silent', 'problem', 'moment'] },
+      {
+        phonemeId: 'vowel-schwa-short',
+        examples: ['open', 'silent', 'problem', 'moment'],
+        kind: 'reduced',
+      },
       { phonemeId: 'vowel-er-long', examples: ['her', 'term', 'serve', 'verb'] },
       { phonemeId: 'diphthong-ear', examples: ['here', 'mere', 'sphere', 'deer'] },
     ],
@@ -559,8 +576,8 @@ export const letterPronunciations: LetterPronunciationGroup[] = [
   {
     letter: 'G',
     pronunciations: [
-      { phonemeId: 'consonant-g', examples: ['go', 'game', 'big', 'green'] },
-      { phonemeId: 'consonant-j', examples: ['giant', 'gym', 'age', 'gem'] },
+      { phonemeId: 'consonant-g', examples: ['go', 'game', 'big', 'green'], kind: 'hard' },
+      { phonemeId: 'consonant-j', examples: ['giant', 'gym', 'age', 'gem'], kind: 'soft' },
     ],
   },
   {
@@ -573,7 +590,11 @@ export const letterPronunciations: LetterPronunciationGroup[] = [
       { phonemeId: 'diphthong-ai', examples: ['time', 'bike', 'find', 'like'] },
       { phonemeId: 'vowel-i-short', examples: ['sit', 'fish', 'milk', 'big'] },
       { phonemeId: 'vowel-er-long', examples: ['bird', 'girl', 'first', 'shirt'] },
-      { phonemeId: 'vowel-schwa-short', examples: ['pencil', 'possible', 'family', 'cousin'] },
+      {
+        phonemeId: 'vowel-schwa-short',
+        examples: ['pencil', 'possible', 'family', 'cousin'],
+        kind: 'reduced',
+      },
       { phonemeId: 'vowel-i-long', examples: ['machine', 'police', 'ski', 'taxi'] },
     ],
   },
@@ -608,7 +629,11 @@ export const letterPronunciations: LetterPronunciationGroup[] = [
       { phonemeId: 'vowel-uh-short', examples: ['son', 'love', 'come', 'money'] },
       { phonemeId: 'vowel-u-long', examples: ['do', 'move', 'who', 'shoe'] },
       { phonemeId: 'vowel-aw-long', examples: ['or', 'horse', 'more', 'door'] },
-      { phonemeId: 'vowel-schwa-short', examples: ['today', 'common', 'control', 'lemon'] },
+      {
+        phonemeId: 'vowel-schwa-short',
+        examples: ['today', 'common', 'control', 'lemon'],
+        kind: 'reduced',
+      },
     ],
   },
   {
@@ -649,7 +674,11 @@ export const letterPronunciations: LetterPronunciationGroup[] = [
       { phonemeId: 'vowel-u-long', examples: ['rule', 'June', 'blue', 'use'] },
       { phonemeId: 'vowel-u-short', examples: ['put', 'push', 'full', 'pull'] },
       { phonemeId: 'vowel-er-long', examples: ['turn', 'burn', 'nurse', 'fur'] },
-      { phonemeId: 'vowel-schwa-short', examples: ['support', 'upon', 'campus', 'focus'] },
+      {
+        phonemeId: 'vowel-schwa-short',
+        examples: ['support', 'upon', 'campus', 'focus'],
+        kind: 'reduced',
+      },
       { phonemeId: 'diphthong-ure', examples: ['pure', 'cure', 'secure', 'sure'] },
     ],
   },
@@ -668,16 +697,19 @@ export const letterPronunciations: LetterPronunciationGroup[] = [
         symbol: '[ks]',
         examples: ['box', 'six', 'text', 'next'],
         note: '组合音，当前无单独音频',
+        kind: 'cluster',
       },
       {
         symbol: '[gz]',
         examples: ['exam', 'exist', 'exactly'],
         note: '组合音，当前无单独音频',
+        kind: 'cluster',
       },
       {
         phonemeId: 'consonant-z',
         examples: ['xylophone', 'xylem'],
         note: '少数词读 [z]',
+        kind: 'minor',
       },
     ],
   },
