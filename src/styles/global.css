@@ -141,7 +141,8 @@ a:hover {
   border-left: 5.5px solid currentColor;
 }
 
-.ipa-symbol.is-loading .ipa-symbol__play-icon {
+.ipa-symbol.is-loading .ipa-symbol__play-icon,
+.letter-sound.is-loading .ipa-symbol__play-icon {
   width: 10px;
   height: 10px;
   border: 1.5px solid currentColor;
@@ -150,12 +151,15 @@ a:hover {
   animation: ipa-spin 700ms linear infinite;
 }
 
-.ipa-symbol.is-loading .ipa-symbol__play-icon::after {
+.ipa-symbol.is-loading .ipa-symbol__play-icon::after,
+.letter-sound.is-loading .ipa-symbol__play-icon::after {
   content: none;
 }
 
 .ipa-symbol.is-playing .ipa-symbol__play-icon::before,
-.ipa-symbol.is-playing .ipa-symbol__play-icon::after {
+.ipa-symbol.is-playing .ipa-symbol__play-icon::after,
+.letter-sound.is-playing .ipa-symbol__play-icon::before,
+.letter-sound.is-playing .ipa-symbol__play-icon::after {
   content: '';
   position: absolute;
   top: 1px;
@@ -166,11 +170,13 @@ a:hover {
   background: currentColor;
 }
 
-.ipa-symbol.is-playing .ipa-symbol__play-icon::before {
+.ipa-symbol.is-playing .ipa-symbol__play-icon::before,
+.letter-sound.is-playing .ipa-symbol__play-icon::before {
   left: 1.75px;
 }
 
-.ipa-symbol.is-playing .ipa-symbol__play-icon::after {
+.ipa-symbol.is-playing .ipa-symbol__play-icon::after,
+.letter-sound.is-playing .ipa-symbol__play-icon::after {
   right: 1.75px;
   left: auto;
 }

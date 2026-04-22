@@ -1,8 +1,29 @@
 ---
-import { categoryLabels, phoneticCategories, phoneticSymbols } from '@/data/phoneticSymbols'
+import {
+  categoryLabels,
+  letterPronunciations,
+  phoneticCategories,
+  phoneticSymbols,
+} from '@/data/phoneticSymbols'
 import '@/styles/global.css'
 
 const symbolsByCategory = Object.groupBy(phoneticSymbols, (item) => item.category)
+const phoneticSymbolsById = new Map(phoneticSymbols.map((item) => [item.id, item]))
+const letterPronunciationCards = letterPronunciations.map((group) => ({
+  ...group,
+  pronunciations: group.pronunciations.map((item) => {
+    const phoneme = item.phonemeId ? phoneticSymbolsById.get(item.phonemeId) : null
+    if (item.phonemeId && !phoneme) throw new Error(`Unknown phoneme id: ${item.phonemeId}`)
+    const symbol = item.symbol ?? phoneme?.symbol
+    if (!symbol) throw new Error('Letter pronunciation needs either a phonemeId or a symbol')
+
+    return {
+      ...item,
+      symbol,
+      audio: phoneme?.audio,
+    }
+  }),
+}))
 
 type FilterField = 'all' | 'family' | 'category' | 'length' | 'manner' | 'voicing'
 type FilterOption = {
@@ -64,6 +85,10 @@ const cx = (...classes: string[]) => classes.join(' ')
 const panelClass = 'rounded-ipa border border-rule bg-panel shadow-ipa'
 const filterButtonClass =
   "ipa-filter min-h-8.5 cursor-pointer touch-manipulation rounded-full border border-rule bg-filter-bg px-3.25 py-1.25 text-filter leading-compact text-muted transition-[background-color,border-color,color] duration-150 ease-in-out hover:border-rule-hover hover:bg-filter-hover hover:text-text focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring [&[aria-pressed='true']]:border-filter-selected-border [&[aria-pressed='true']]:bg-accent-soft [&[aria-pressed='true']]:font-bold [&[aria-pressed='true']]:text-accent"
+const letterButtonClass =
+  "letter-tab flex size-9 cursor-pointer touch-manipulation items-center justify-center rounded-full border border-rule bg-filter-bg font-mono text-filter leading-none font-bold text-muted transition-[background-color,border-color,color] duration-150 ease-in-out hover:border-rule-hover hover:bg-filter-hover hover:text-text focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring [&[aria-pressed='true']]:border-filter-selected-border [&[aria-pressed='true']]:bg-accent-soft [&[aria-pressed='true']]:text-accent"
+const letterSoundButtonClass =
+  'letter-sound group/sound relative flex min-h-19 cursor-pointer touch-manipulation flex-col items-start justify-between gap-2 rounded-lg border border-rule bg-symbol-bg px-3.5 py-3 text-left text-text transition-[background-color,border-color,color] duration-150 ease-in-out hover:border-rule-hover hover:bg-symbol-hover active:bg-symbol-active focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring disabled:cursor-default disabled:opacity-100 disabled:hover:border-rule disabled:hover:bg-symbol-bg [&.is-loading]:border-symbol-loading-border [&.is-loading]:bg-symbol-loading-bg [&.is-loading]:text-accent [&.is-playing]:border-symbol-playing-border [&.is-playing]:bg-symbol-playing-bg [&.is-playing]:text-accent'
 type PhoneticCategory = (typeof phoneticCategories)[number]
 const getGroupLayoutClass = (category: PhoneticCategory) => {
   switch (category) {
@@ -77,6 +102,7 @@ const getGroupLayoutClass = (category: PhoneticCategory) => {
 }
 const symbolButtonClass =
   'ipa-symbol group/symbol relative inline-flex min-h-9 cursor-pointer touch-manipulation items-center justify-start gap-2 rounded-lg border border-rule bg-symbol-bg px-3.5 py-1 text-text transition-[background-color,border-color,color] duration-150 ease-in-out hover:border-rule-hover hover:bg-symbol-hover active:bg-symbol-active focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring [&.is-loading]:border-symbol-loading-border [&.is-loading]:bg-symbol-loading-bg [&.is-loading]:text-accent [&.is-playing]:border-symbol-playing-border [&.is-playing]:bg-symbol-playing-bg [&.is-playing]:text-accent'
+const repeatOptions = [1, 2, 3, 4, 5]
 const currentYear = new Date().getFullYear()
 ---
 
@@ -138,10 +164,119 @@ const currentYear = new Date().getFullYear()
         </aside>
       </section>
 
-      <section class={cx(panelClass, 'my-4.5 px-4.5 py-3.5')} aria-label="使用提示">
+      <section
+        class={cx(
+          panelClass,
+          'my-4.5 flex items-center justify-between gap-3 px-4.5 py-3.5 max-ipa-phone:flex-col max-ipa-phone:items-start',
+        )}
+        aria-label="使用提示和播放设置"
+      >
         <p class="m-0 text-muted">
           建议顺序：先听元音，再听辅音；遇到相近音时连续点听，比较口型和气流差别。
         </p>
+        <label class="inline-flex flex-none items-center gap-2 text-filter text-muted">
+          <span class="font-bold whitespace-nowrap text-faint">循环</span>
+          <select
+            id="repeat-count"
+            class="h-8 cursor-pointer rounded-full border border-rule bg-filter-bg px-3 py-1 leading-compact text-text outline-none transition-[background-color,border-color] duration-150 ease-in-out hover:border-rule-hover hover:bg-filter-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+            aria-label="每个音标自动循环播放次数"
+          >
+            {repeatOptions.map((count) => <option value={count}>{count} 次</option>)}
+          </select>
+        </label>
+      </section>
+
+      <section class={cx(panelClass, 'mb-4.5 p-4.5')} aria-labelledby="letter-pronunciation-title">
+        <header
+          class="mb-3.5 flex items-end justify-between gap-4 border-b border-rule pb-3 max-ipa-phone:flex-col max-ipa-phone:items-start"
+        >
+          <div>
+            <p
+              class="mb-1 font-mono text-group-eyebrow font-bold tracking-[0.08em] text-faint uppercase"
+            >
+              letter sounds
+            </p>
+            <h2 id="letter-pronunciation-title" class="m-0 text-group-title leading-compact">
+              字母读音
+            </h2>
+          </div>
+          <div class="flex flex-wrap gap-2" role="tablist" aria-label="按字母查看常见读音">
+            {
+              letterPronunciationCards.map((group, index) => (
+                <button
+                  class={letterButtonClass}
+                  type="button"
+                  role="tab"
+                  data-letter-tab={group.letter}
+                  aria-controls={`letter-panel-${group.letter}`}
+                  aria-selected={index === 0 ? 'true' : 'false'}
+                  aria-pressed={index === 0 ? 'true' : 'false'}
+                >
+                  {group.letter}
+                </button>
+              ))
+            }
+          </div>
+        </header>
+
+        {
+          letterPronunciationCards.map((group, index) => (
+            <section
+              id={`letter-panel-${group.letter}`}
+              class="letter-panel grid grid-cols-[7rem_minmax(0,1fr)] gap-4 max-ipa-tablet:grid-cols-1"
+              data-letter-panel={group.letter}
+              role="tabpanel"
+              hidden={index !== 0}
+            >
+              <div class="flex flex-col items-center justify-between rounded-lg border border-rule bg-filter-bg px-4 py-3 text-center">
+                <span class="flex items-end justify-center gap-1 font-mono leading-none font-bold text-text">
+                  <span class="text-[3rem]">{group.letter}</span>
+                  <span class="pb-1 text-summary-number text-muted">
+                    {group.letter.toLowerCase()}
+                  </span>
+                </span>
+                <span class="text-count text-muted">{group.pronunciations.length} 种读音</span>
+              </div>
+              <div class="grid grid-cols-2 gap-2 max-ipa-phone:grid-cols-1">
+                {group.pronunciations.map((item) => (
+                  <button
+                    class={letterSoundButtonClass}
+                    type="button"
+                    data-letter-sound={group.letter}
+                    data-symbol={item.symbol}
+                    data-audio={item.audio}
+                    data-examples={item.examples.join(', ')}
+                    disabled={!item.audio}
+                    aria-pressed="false"
+                    aria-label={`${group.letter} 发 ${item.symbol}，例词 ${item.examples.join(', ')}${item.note ? `，${item.note}` : ''}`}
+                    title={`${group.letter} 发 ${item.symbol}，例词 ${item.examples.join(', ')}${item.note ? `，${item.note}` : ''}`}
+                  >
+                    <span class="flex w-full items-baseline justify-between gap-3">
+                      <span class="font-ipa-symbol text-symbol leading-symbol font-bold tracking-normal">
+                        {item.symbol}
+                      </span>
+                      {item.audio ? (
+                        <span class="ipa-symbol__play relative inline-flex size-5 flex-none items-center justify-center rounded-full border border-play-border text-faint transition-[background-color,border-color,color] duration-150 ease-in-out group-hover/sound:border-current group-hover/sound:text-current group-[.is-loading]/sound:border-current group-[.is-loading]/sound:bg-play-loading-bg group-[.is-loading]/sound:text-current group-[.is-playing]/sound:border-current group-[.is-playing]/sound:bg-play-playing-bg group-[.is-playing]/sound:text-current">
+                          <span class="ipa-symbol__play-icon" />
+                        </span>
+                      ) : (
+                        <span class="rounded-full border border-rule px-2 py-0.5 text-filter-label leading-none text-faint">
+                          暂无音频
+                        </span>
+                      )}
+                    </span>
+                    <span class="text-filter leading-compact text-muted">
+                      {item.examples.join(' / ')}
+                    </span>
+                    {item.note && (
+                      <span class="text-filter-label leading-compact text-faint">{item.note}</span>
+                    )}
+                  </button>
+                ))}
+              </div>
+            </section>
+          ))
+        }
       </section>
 
       <section
@@ -238,10 +373,17 @@ const currentYear = new Date().getFullYear()
                       data-length={item.length}
                       data-manner={item.manner}
                       data-voicing={item.voicing}
+                      data-letters={item.letters}
                       aria-pressed="false"
-                      aria-label={`播放 ${item.symbol}`}
-                      title={`播放 ${item.symbol}`}
+                      aria-label={`播放 ${item.symbol}，常见拼写 ${item.letters}`}
+                      title={`播放 ${item.symbol}，常见拼写 ${item.letters}`}
                     >
+                      <span
+                        class="pointer-events-none absolute top-px right-1 font-sans text-[0.5rem] leading-none font-normal tracking-normal whitespace-nowrap text-faint opacity-45"
+                        aria-hidden="true"
+                      >
+                        {item.letters}
+                      </span>
                       <span
                         class="ipa-symbol__play relative inline-flex size-5 flex-none translate-y-px items-center justify-center rounded-full border border-play-border text-faint transition-[background-color,border-color,color] duration-150 ease-in-out group-hover/symbol:border-current group-hover/symbol:text-current group-[.is-loading]/symbol:border-current group-[.is-loading]/symbol:bg-play-loading-bg group-[.is-loading]/symbol:text-current group-[.is-playing]/symbol:border-current group-[.is-playing]/symbol:bg-play-playing-bg group-[.is-playing]/symbol:text-current"
                         aria-hidden="true"
@@ -301,9 +443,21 @@ const currentYear = new Date().getFullYear()
       const status = document.querySelector<HTMLElement>('#status')
       const statusText = document.querySelector('#status-text')
       const buttons = Array.from(document.querySelectorAll<HTMLButtonElement>('.ipa-symbol'))
+      const letterSoundButtons = Array.from(
+        document.querySelectorAll<HTMLButtonElement>('.letter-sound'),
+      )
       const filterButtons = Array.from(document.querySelectorAll<HTMLButtonElement>('.ipa-filter'))
+      const letterTabButtons = Array.from(
+        document.querySelectorAll<HTMLButtonElement>('.letter-tab'),
+      )
+      const letterPanels = Array.from(document.querySelectorAll<HTMLElement>('.letter-panel'))
       const groups = Array.from(document.querySelectorAll<HTMLElement>('.ipa-group'))
+      const repeatSelect = document.querySelector<HTMLSelectElement>('#repeat-count')
       let activeButton: HTMLButtonElement | null = null
+      let activePlayToken = 0
+      let activeRepeatIndex = 0
+      let repeatCount = 1
+      const repeatStorageKey = 'english-ipa-repeat-count'
 
       const filterRules = {
         all: { field: 'all', value: 'all', useDefaultHeading: true },
@@ -371,6 +525,19 @@ const currentYear = new Date().getFullYear()
         if (status) status.dataset.state = 'error'
       }
 
+      function setPlayingStatus(button: HTMLButtonElement) {
+        const symbol = button.dataset.symbol ?? ''
+        const letter = button.dataset.letterSound
+        const examples = button.dataset.examples
+
+        if (!statusText) return
+        if (letter && examples) {
+          statusText.textContent = `${letter} 发 ${symbol}：${examples}`
+          return
+        }
+        statusText.textContent = `正在播放 ${symbol}`
+      }
+
       function clearActive() {
         if (activeButton) {
           activeButton.classList.remove('is-loading')
@@ -378,6 +545,40 @@ const currentYear = new Date().getFullYear()
           activeButton.setAttribute('aria-pressed', 'false')
         }
         activeButton = null
+      }
+
+      function stopActivePlayback(shouldResetStatus = true) {
+        activePlayToken += 1
+        activeRepeatIndex = 0
+        player?.pause()
+        if (player) player.currentTime = 0
+        clearActive()
+        if (shouldResetStatus) resetStatus()
+      }
+
+      function getValidRepeatCount(value: unknown) {
+        const count = typeof value === 'number' ? value : Number.parseInt(String(value), 10)
+        return Number.isInteger(count) && count >= 1 && count <= 5 ? count : 1
+      }
+
+      function loadRepeatCount() {
+        try {
+          return getValidRepeatCount(window.localStorage.getItem(repeatStorageKey))
+        } catch {
+          return 1
+        }
+      }
+
+      function setRepeatCount(value: unknown, shouldPersist = true) {
+        repeatCount = getValidRepeatCount(value)
+        if (repeatSelect) repeatSelect.value = String(repeatCount)
+
+        if (!shouldPersist) return
+        try {
+          window.localStorage.setItem(repeatStorageKey, String(repeatCount))
+        } catch {
+          // Storage can be unavailable in private browsing; playback should still work.
+        }
       }
 
       function getFilterRule(filter: string) {
@@ -410,6 +611,25 @@ const currentYear = new Date().getFullYear()
         return getButtonFilterValue(button, rule.field) === rule.value
       }
 
+      function selectLetter(letter: string) {
+        if (
+          activeButton?.classList.contains('letter-sound') &&
+          activeButton.dataset.letterSound !== letter
+        ) {
+          stopActivePlayback()
+        }
+
+        letterTabButtons.forEach((button) => {
+          const isSelected = button.dataset.letterTab === letter
+          button.setAttribute('aria-selected', String(isSelected))
+          button.setAttribute('aria-pressed', String(isSelected))
+        })
+
+        letterPanels.forEach((panel) => {
+          panel.hidden = panel.dataset.letterPanel !== letter
+        })
+      }
+
       function updateGroupHeading(group: HTMLElement, filter: string) {
         const rule = getFilterRule(filter)
         const title = group.querySelector<HTMLElement>('[data-title]')
@@ -425,13 +645,12 @@ const currentYear = new Date().getFullYear()
       }
 
       function applyFilter(filter: string) {
-        const shouldClearActive = activeButton ? !matchesFilter(activeButton, filter) : false
+        const shouldClearActive = activeButton?.classList.contains('ipa-symbol')
+          ? !matchesFilter(activeButton, filter)
+          : false
 
         if (shouldClearActive) {
-          player?.pause()
-          if (player) player.currentTime = 0
-          clearActive()
-          resetStatus()
+          stopActivePlayback()
         }
 
         filterButtons.forEach((button) => {
@@ -463,11 +682,12 @@ const currentYear = new Date().getFullYear()
         const audio = button.dataset.audio
         if (!audio) return
 
-        player.pause()
-        player.currentTime = 0
-        clearActive()
+        stopActivePlayback(false)
+        activePlayToken += 1
+        const playToken = activePlayToken
 
         activeButton = button
+        activeRepeatIndex = 1
         button.classList.add('is-loading')
         button.setAttribute('aria-pressed', 'true')
         player.src = audio
@@ -476,13 +696,15 @@ const currentYear = new Date().getFullYear()
         try {
           await player.play()
 
-          if (activeButton !== button) {
+          if (activeButton !== button || activePlayToken !== playToken) {
             return
           }
 
           button.classList.remove('is-loading')
           button.classList.add('is-playing')
+          setPlayingStatus(button)
         } catch {
+          if (activePlayToken !== playToken) return
           clearActive()
           setErrorStatus(`${symbol} 播放失败，请再试一次`)
         }
@@ -494,18 +716,71 @@ const currentYear = new Date().getFullYear()
         })
       })
 
+      letterSoundButtons.forEach((button) => {
+        button.addEventListener('click', () => {
+          playSymbol(button)
+        })
+      })
+
+      letterTabButtons.forEach((button) => {
+        button.addEventListener('click', () => {
+          selectLetter(button.dataset.letterTab ?? 'A')
+        })
+      })
+
       filterButtons.forEach((button) => {
         button.addEventListener('click', () => {
           applyFilter(button.dataset.filter ?? 'all')
         })
       })
 
-      player?.addEventListener('ended', () => {
-        clearActive()
-        resetStatus()
+      repeatSelect?.addEventListener('change', () => {
+        setRepeatCount(repeatSelect.value)
+      })
+
+      setRepeatCount(loadRepeatCount(), false)
+
+      player?.addEventListener('ended', async () => {
+        if (!player || !activeButton) {
+          clearActive()
+          resetStatus()
+          return
+        }
+
+        if (activeRepeatIndex >= repeatCount) {
+          clearActive()
+          resetStatus()
+          activeRepeatIndex = 0
+          return
+        }
+
+        const button = activeButton
+        const symbol = button.dataset.symbol ?? ''
+        const playToken = activePlayToken
+        activeRepeatIndex += 1
+        player.currentTime = 0
+
+        try {
+          await player.play()
+
+          if (activeButton !== button || activePlayToken !== playToken) {
+            return
+          }
+
+          button.classList.remove('is-loading')
+          button.classList.add('is-playing')
+          button.setAttribute('aria-pressed', 'true')
+          setPlayingStatus(button)
+        } catch {
+          if (activePlayToken !== playToken) return
+          clearActive()
+          setErrorStatus(`${symbol} 播放失败，请再试一次`)
+        }
       })
 
       player?.addEventListener('error', () => {
+        activePlayToken += 1
+        activeRepeatIndex = 0
         clearActive()
         setErrorStatus('音频加载失败，请确认本地音频文件存在')
       })

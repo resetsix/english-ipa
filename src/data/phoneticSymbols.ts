@@ -9,10 +9,21 @@ export type ConsonantManner =
   | 'lateral'
   | 'semivowel'
 export type ConsonantVoicing = 'voiceless' | 'voiced'
+export type LetterPronunciation = {
+  phonemeId?: string
+  symbol?: string
+  examples: string[]
+  note?: string
+}
+export type LetterPronunciationGroup = {
+  letter: string
+  pronunciations: LetterPronunciation[]
+}
 
 export type PhoneticSymbol = {
   id: string
   symbol: string
+  letters: string
   category: PhoneticCategory
   family: PhoneticFamily
   audio: string
@@ -36,7 +47,58 @@ export const categoryLabels: Record<PhoneticCategory, { title: string; eyebrow: 
   },
 }
 
-export const phoneticSymbols: PhoneticSymbol[] = [
+const phoneticLetterLabels: Record<string, string> = {
+  'vowel-i-long': 'ee / ea / e',
+  'vowel-i-short': 'i / y',
+  'vowel-e-short': 'e / ea',
+  'vowel-ae-short': 'a',
+  'vowel-er-long': 'er / ir / ur',
+  'vowel-schwa-short': 'a / e / o',
+  'vowel-uh-short': 'u / o / ou',
+  'vowel-a-long': 'ar / a',
+  'vowel-o-short': 'o / a',
+  'vowel-aw-long': 'aw / or / au',
+  'vowel-u-short': 'oo / u',
+  'vowel-u-long': 'oo / u / ew',
+  'diphthong-ei': 'a / ai / ay',
+  'diphthong-ai': 'i / y / igh',
+  'diphthong-oi': 'oi / oy',
+  'diphthong-ou': 'o / oa / ow',
+  'diphthong-au': 'ou / ow',
+  'diphthong-ear': 'ear / eer / ere',
+  'diphthong-air': 'air / are / ear',
+  'diphthong-ure': 'ure / our',
+  'consonant-p': 'p / pp',
+  'consonant-b': 'b / bb',
+  'consonant-t': 't / tt',
+  'consonant-d': 'd / dd',
+  'consonant-k': 'c / k / ck',
+  'consonant-g': 'g / gg',
+  'consonant-f': 'f / ff / ph',
+  'consonant-v': 'v / ve',
+  'consonant-s': 's / ss / c',
+  'consonant-z': 'z / s',
+  'consonant-th-soft': 'th',
+  'consonant-th-voice': 'th',
+  'consonant-sh': 'sh / ti / ci',
+  'consonant-zh': 's / si',
+  'consonant-h': 'h / wh',
+  'consonant-r': 'r / rr',
+  'consonant-ch': 'ch / tch',
+  'consonant-j': 'j / g / dge',
+  'consonant-tr': 'tr',
+  'consonant-dr': 'dr',
+  'consonant-ts': 'ts',
+  'consonant-dz': 'ds / dz',
+  'consonant-m': 'm / mm',
+  'consonant-n': 'n / nn',
+  'consonant-ng': 'ng / n',
+  'consonant-l': 'l / ll',
+  'consonant-w': 'w / wh',
+  'consonant-y': 'y',
+}
+
+const phoneticSymbolData: Omit<PhoneticSymbol, 'letters'>[] = [
   {
     id: 'vowel-i-long',
     symbol: '[iː]',
@@ -443,4 +505,193 @@ export const phoneticSymbols: PhoneticSymbol[] = [
   },
 ]
 
+export const phoneticSymbols = phoneticSymbolData.map((item) => ({
+  ...item,
+  letters: phoneticLetterLabels[item.id] ?? '',
+})) satisfies PhoneticSymbol[]
+
 export const phoneticCategories: PhoneticCategory[] = ['monophthong', 'diphthong', 'consonant']
+
+export const letterPronunciations: LetterPronunciationGroup[] = [
+  {
+    letter: 'A',
+    pronunciations: [
+      { phonemeId: 'diphthong-ei', examples: ['name', 'cake', 'late', 'game'] },
+      { phonemeId: 'vowel-ae-short', examples: ['cat', 'apple', 'bag', 'hat'] },
+      { phonemeId: 'vowel-a-long', examples: ['car', 'father', 'class', 'park'] },
+      { phonemeId: 'vowel-aw-long', examples: ['all', 'water', 'talk', 'ball'] },
+      { phonemeId: 'vowel-schwa-short', examples: ['about', 'ago', 'sofa', 'banana'] },
+    ],
+  },
+  {
+    letter: 'B',
+    pronunciations: [{ phonemeId: 'consonant-b', examples: ['bad', 'boy', 'book', 'baby'] }],
+  },
+  {
+    letter: 'C',
+    pronunciations: [
+      { phonemeId: 'consonant-k', examples: ['cat', 'cup', 'music', 'coat'] },
+      { phonemeId: 'consonant-s', examples: ['city', 'cell', 'face', 'nice'] },
+      { phonemeId: 'consonant-ch', examples: ['cello', 'church', 'much', 'child'] },
+    ],
+  },
+  {
+    letter: 'D',
+    pronunciations: [
+      { phonemeId: 'consonant-d', examples: ['dog', 'day', 'desk', 'red'] },
+      { phonemeId: 'consonant-j', examples: ['educate', 'soldier', 'procedure', 'edge'] },
+    ],
+  },
+  {
+    letter: 'E',
+    pronunciations: [
+      { phonemeId: 'vowel-e-short', examples: ['bed', 'pen', 'egg', 'red'] },
+      { phonemeId: 'vowel-i-long', examples: ['he', 'she', 'even', 'me'] },
+      { phonemeId: 'vowel-schwa-short', examples: ['open', 'silent', 'problem', 'moment'] },
+      { phonemeId: 'vowel-er-long', examples: ['her', 'term', 'serve', 'verb'] },
+      { phonemeId: 'diphthong-ear', examples: ['here', 'mere', 'sphere', 'deer'] },
+    ],
+  },
+  {
+    letter: 'F',
+    pronunciations: [{ phonemeId: 'consonant-f', examples: ['fish', 'food', 'leaf', 'four'] }],
+  },
+  {
+    letter: 'G',
+    pronunciations: [
+      { phonemeId: 'consonant-g', examples: ['go', 'game', 'big', 'green'] },
+      { phonemeId: 'consonant-j', examples: ['giant', 'gym', 'age', 'gem'] },
+    ],
+  },
+  {
+    letter: 'H',
+    pronunciations: [{ phonemeId: 'consonant-h', examples: ['he', 'hat', 'house', 'home'] }],
+  },
+  {
+    letter: 'I',
+    pronunciations: [
+      { phonemeId: 'diphthong-ai', examples: ['time', 'bike', 'find', 'like'] },
+      { phonemeId: 'vowel-i-short', examples: ['sit', 'fish', 'milk', 'big'] },
+      { phonemeId: 'vowel-er-long', examples: ['bird', 'girl', 'first', 'shirt'] },
+      { phonemeId: 'vowel-schwa-short', examples: ['pencil', 'possible', 'family', 'cousin'] },
+      { phonemeId: 'vowel-i-long', examples: ['machine', 'police', 'ski', 'taxi'] },
+    ],
+  },
+  {
+    letter: 'J',
+    pronunciations: [{ phonemeId: 'consonant-j', examples: ['jam', 'job', 'June', 'jump'] }],
+  },
+  {
+    letter: 'K',
+    pronunciations: [{ phonemeId: 'consonant-k', examples: ['kite', 'keep', 'book', 'key'] }],
+  },
+  {
+    letter: 'L',
+    pronunciations: [{ phonemeId: 'consonant-l', examples: ['leg', 'light', 'full', 'tall'] }],
+  },
+  {
+    letter: 'M',
+    pronunciations: [{ phonemeId: 'consonant-m', examples: ['man', 'moon', 'time', 'milk'] }],
+  },
+  {
+    letter: 'N',
+    pronunciations: [
+      { phonemeId: 'consonant-n', examples: ['no', 'name', 'ten', 'nine'] },
+      { phonemeId: 'consonant-ng', examples: ['bank', 'think', 'uncle', 'long'] },
+    ],
+  },
+  {
+    letter: 'O',
+    pronunciations: [
+      { phonemeId: 'diphthong-ou', examples: ['go', 'home', 'note', 'old'] },
+      { phonemeId: 'vowel-o-short', examples: ['hot', 'dog', 'box', 'not'] },
+      { phonemeId: 'vowel-uh-short', examples: ['son', 'love', 'come', 'money'] },
+      { phonemeId: 'vowel-u-long', examples: ['do', 'move', 'who', 'shoe'] },
+      { phonemeId: 'vowel-aw-long', examples: ['or', 'horse', 'more', 'door'] },
+      { phonemeId: 'vowel-schwa-short', examples: ['today', 'common', 'control', 'lemon'] },
+    ],
+  },
+  {
+    letter: 'P',
+    pronunciations: [{ phonemeId: 'consonant-p', examples: ['pen', 'map', 'happy', 'park'] }],
+  },
+  {
+    letter: 'Q',
+    pronunciations: [
+      { phonemeId: 'consonant-k', examples: ['quit', 'queen', 'question', 'quick'] },
+    ],
+  },
+  {
+    letter: 'R',
+    pronunciations: [{ phonemeId: 'consonant-r', examples: ['red', 'rain', 'write', 'run'] }],
+  },
+  {
+    letter: 'S',
+    pronunciations: [
+      { phonemeId: 'consonant-s', examples: ['see', 'sun', 'bus', 'class'] },
+      { phonemeId: 'consonant-z', examples: ['is', 'rose', 'music', 'his'] },
+      { phonemeId: 'consonant-sh', examples: ['sugar', 'sure', 'Asia', 'issue'] },
+      { phonemeId: 'consonant-zh', examples: ['vision', 'usual', 'measure', 'treasure'] },
+    ],
+  },
+  {
+    letter: 'T',
+    pronunciations: [
+      { phonemeId: 'consonant-t', examples: ['tea', 'top', 'cat', 'ten'] },
+      { phonemeId: 'consonant-sh', examples: ['nation', 'patient', 'station', 'action'] },
+      { phonemeId: 'consonant-ch', examples: ['nature', 'question', 'future', 'picture'] },
+    ],
+  },
+  {
+    letter: 'U',
+    pronunciations: [
+      { phonemeId: 'vowel-uh-short', examples: ['cup', 'sun', 'much', 'bus'] },
+      { phonemeId: 'vowel-u-long', examples: ['rule', 'June', 'blue', 'use'] },
+      { phonemeId: 'vowel-u-short', examples: ['put', 'push', 'full', 'pull'] },
+      { phonemeId: 'vowel-er-long', examples: ['turn', 'burn', 'nurse', 'fur'] },
+      { phonemeId: 'vowel-schwa-short', examples: ['support', 'upon', 'campus', 'focus'] },
+      { phonemeId: 'diphthong-ure', examples: ['pure', 'cure', 'secure', 'sure'] },
+    ],
+  },
+  {
+    letter: 'V',
+    pronunciations: [{ phonemeId: 'consonant-v', examples: ['very', 'voice', 'five', 'van'] }],
+  },
+  {
+    letter: 'W',
+    pronunciations: [{ phonemeId: 'consonant-w', examples: ['we', 'water', 'twin', 'win'] }],
+  },
+  {
+    letter: 'X',
+    pronunciations: [
+      {
+        symbol: '[ks]',
+        examples: ['box', 'six', 'text', 'next'],
+        note: '组合音，当前无单独音频',
+      },
+      {
+        symbol: '[gz]',
+        examples: ['exam', 'exist', 'exactly'],
+        note: '组合音，当前无单独音频',
+      },
+      {
+        phonemeId: 'consonant-z',
+        examples: ['xylophone', 'xylem'],
+        note: '少数词读 [z]',
+      },
+    ],
+  },
+  {
+    letter: 'Y',
+    pronunciations: [
+      { phonemeId: 'diphthong-ai', examples: ['my', 'try', 'sky', 'fly'] },
+      { phonemeId: 'vowel-i-short', examples: ['gym', 'myth', 'system', 'symbol'] },
+      { phonemeId: 'vowel-i-long', examples: ['happy', 'city', 'baby', 'funny'] },
+      { phonemeId: 'consonant-y', examples: ['yes', 'yellow', 'young', 'you'] },
+    ],
+  },
+  {
+    letter: 'Z',
+    pronunciations: [{ phonemeId: 'consonant-z', examples: ['zoo', 'zero', 'buzz', 'zip'] }],
+  },
+]
