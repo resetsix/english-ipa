@@ -1,6 +1,7 @@
 ---
 import {
   categoryLabels,
+  exampleIpaByWord,
   letterPronunciations,
   phoneticCategories,
   phoneticSymbols,
@@ -43,6 +44,7 @@ const letterPronunciationKindDescriptions = {
   silent: '静音：字母写出来但通常不发音，如 write 中的 w',
   minor: '少数词：只出现在少量常见词中的读法，如 xylophone',
 } satisfies Record<LetterPronunciationKind, string>
+const getExampleIpa = (word: string) => exampleIpaByWord[word.toLowerCase()]
 const letterPronunciationCards = letterPronunciations.map((group) => ({
   ...group,
   pronunciations: group.pronunciations.map((item) => {
@@ -52,9 +54,16 @@ const letterPronunciationCards = letterPronunciations.map((group) => ({
     if (!symbol) throw new Error('Letter pronunciation needs either a phonemeId or a symbol')
     const symbolCore = getSymbolCore(symbol)
     const kind = item.kind ?? 'common'
+    const exampleItems = item.examples.map((word) => ({
+      word,
+      ipa: getExampleIpa(word),
+    }))
+    const exampleWordsText = exampleItems.map((example) => example.word).join(', ')
 
     return {
       ...item,
+      exampleItems,
+      exampleWordsText,
       kind,
       kindLabel: letterPronunciationKindLabels[kind],
       kindDescription: letterPronunciationKindDescriptions[kind],
@@ -287,6 +296,9 @@ const currentYear = new Date().getFullYear()
             <h2 id="letter-pronunciation-title" class="m-0 text-group-title leading-compact">
               字母读音
             </h2>
+            <p class="mt-1 text-filter-label leading-compact text-faint">
+              示例词音标使用美式国际音标（IPA）
+            </p>
           </div>
           <div class="flex flex-wrap gap-2" role="tablist" aria-label="按字母查看常见读音">
             {
@@ -334,13 +346,13 @@ const currentYear = new Date().getFullYear()
                     data-symbol={item.symbolDisplay}
                     data-symbol-core={item.symbolCore}
                     data-audio={item.audio}
-                    data-examples={item.examples.join(', ')}
+                    data-examples={item.exampleWordsText}
                     data-kind-label={item.kindLabel}
                     data-note={item.note}
                     disabled={!item.audio}
                     aria-pressed="false"
-                    aria-label={`${group.letter} 发 ${item.symbolDisplay}，${item.kindLabel}，例词 ${item.examples.join(', ')}${item.note ? `，${item.note}` : ''}`}
-                    title={`${group.letter} 发 ${item.symbolDisplay}，${item.kindLabel}，例词 ${item.examples.join(', ')}${item.note ? `，${item.note}` : ''}`}
+                    aria-label={`${group.letter} 发 ${item.symbolDisplay}，${item.kindLabel}，例词 ${item.exampleWordsText}${item.note ? `，${item.note}` : ''}`}
+                    title={`${group.letter} 发 ${item.symbolDisplay}，${item.kindLabel}，例词 ${item.exampleWordsText}${item.note ? `，${item.note}` : ''}`}
                   >
                     <span class="flex w-full items-baseline justify-between gap-3">
                       <span class="flex min-w-0 items-baseline gap-2">
@@ -369,8 +381,19 @@ const currentYear = new Date().getFullYear()
                         </span>
                       )}
                     </span>
-                    <span class="text-filter leading-compact text-muted">
-                      {item.examples.join(' / ')}
+                    <span class="grid w-full grid-cols-4 gap-x-3 gap-y-2 max-ipa-phone:grid-cols-2">
+                      {item.exampleItems.map((example) => (
+                        <span class="min-w-0">
+                          <span class="block overflow-hidden text-filter leading-compact text-ellipsis whitespace-nowrap text-muted">
+                            {example.word}
+                          </span>
+                          {example.ipa && (
+                            <span class="font-ipa-symbol block overflow-hidden text-[0.78rem] leading-compact text-ellipsis whitespace-nowrap text-faint">
+                              {example.ipa}
+                            </span>
+                          )}
+                        </span>
+                      ))}
                     </span>
                     {item.note && (
                       <span class="text-filter-label leading-compact text-faint">{item.note}</span>
