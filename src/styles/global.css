@@ -153,6 +153,20 @@ html[data-symbol-wrapper='slash'] [data-symbol-wrapper-option='slash'] {
   border-left: 5.5px solid currentColor;
 }
 
+.ipa-symbol.is-loading > .ipa-symbol__play,
+.letter-sound.is-loading > .flex > .ipa-symbol__play {
+  border-color: currentColor;
+  background-color: var(--color-play-loading-bg);
+  color: currentColor;
+}
+
+.ipa-symbol.is-playing > .ipa-symbol__play,
+.letter-sound.is-playing > .flex > .ipa-symbol__play {
+  border-color: currentColor;
+  background-color: var(--color-play-playing-bg);
+  color: currentColor;
+}
+
 .ipa-symbol.is-loading .ipa-symbol__play-icon,
 .letter-sound.is-loading .ipa-symbol__play-icon {
   width: 10px;
