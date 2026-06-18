@@ -287,7 +287,7 @@ const currentYear = new Date().getFullYear()
           <div class="inline-flex items-center gap-2 text-filter text-muted">
             <span class={settingLabelClass}>展示</span>
             <div
-              class="inline-flex h-[var(--control-height)] overflow-hidden rounded-full border border-rule bg-filter-bg"
+              class="inline-flex h-(--control-height) overflow-hidden rounded-full border border-rule bg-filter-bg"
               role="group"
               aria-label="音标括号显示"
             >
@@ -317,7 +317,7 @@ const currentYear = new Date().getFullYear()
               <select
                 id="repeat-count"
                 class={cx(
-                  'h-[var(--control-height)] cursor-pointer appearance-none rounded-full border border-rule bg-filter-bg py-0 pr-8 pl-3 leading-none text-text outline-none',
+                  'h-(--control-height) cursor-pointer appearance-none rounded-full border border-rule bg-filter-bg py-0 pr-8 pl-3 leading-none text-text outline-none',
                   colorTransitionClass,
                   'hover:border-rule-hover hover:bg-filter-hover',
                   focusRingClass,
@@ -610,10 +610,7 @@ const currentYear = new Date().getFullYear()
             </a>
           </span>
           <span class="inline-flex flex-wrap gap-2">
-            <span>©{currentYear} 未有期. All rights reserved.</span>
-          </span>
-          <span class="inline-flex flex-wrap gap-2">
-            <span>本项目仅用于学习目的，音标内容版权归原网站所有。</span>
+            <span>本项目仅用于学习目的，音频内容版权归原网站所有。</span>
             <a
               class="font-bold text-accent"
               href="https://www.yyybabc.com/"
@@ -622,6 +619,9 @@ const currentYear = new Date().getFullYear()
             >
               yyybabc.com
             </a>
+          </span>
+          <span class="inline-flex flex-wrap gap-2">
+            <span>©{currentYear} 未有期. All rights reserved.</span>
           </span>
         </div>
       </footer>
