@@ -165,17 +165,26 @@ html[data-symbol-wrapper='slash'] [data-symbol-wrapper-option='slash'] {
 .ipa-symbol__play-icon {
   position: relative;
   display: block;
-  width: 9px;
-  height: 9px;
+  flex: 0 0 auto;
+  width: 10px;
+  height: 10px;
+  line-height: 0;
 }
 
 .ipa-symbol__play-icon::after {
   content: '';
   position: absolute;
-  top: 1px;
-  left: 3px;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
   border-block: 3.5px solid transparent;
-  border-left: 5.5px solid currentColor;
+  border-left: 5px solid currentColor;
+  transform: translate(-35%, -50%);
+}
+
+.ipa-symbol__play-icon span {
+  display: none;
 }
 
 .ipa-symbol.is-loading > .ipa-symbol__play,
@@ -207,34 +216,54 @@ html[data-symbol-wrapper='slash'] [data-symbol-wrapper-option='slash'] {
   content: none;
 }
 
-.ipa-symbol.is-playing .ipa-symbol__play-icon::before,
 .ipa-symbol.is-playing .ipa-symbol__play-icon::after,
-.letter-sound.is-playing .ipa-symbol__play-icon::before,
 .letter-sound.is-playing .ipa-symbol__play-icon::after {
-  content: '';
+  content: none;
+}
+
+.ipa-symbol.is-playing .ipa-symbol__play-icon span,
+.letter-sound.is-playing .ipa-symbol__play-icon span {
   position: absolute;
-  top: 1px;
-  width: 2.5px;
+  top: 1.5px;
+  left: 4px;
+  display: block;
+  width: 2px;
   height: 7px;
-  border: 0;
-  border-radius: 1px;
+  border-radius: 999px;
   background: currentColor;
+  animation: ipa-audio-pulse 680ms ease-in-out infinite;
 }
 
-.ipa-symbol.is-playing .ipa-symbol__play-icon::before,
-.letter-sound.is-playing .ipa-symbol__play-icon::before {
-  left: 1.75px;
+.ipa-symbol.is-playing .ipa-symbol__play-icon span:first-child,
+.letter-sound.is-playing .ipa-symbol__play-icon span:first-child {
+  top: 2.75px;
+  left: 1px;
+  height: 4.5px;
+  animation-delay: -160ms;
 }
 
-.ipa-symbol.is-playing .ipa-symbol__play-icon::after,
-.letter-sound.is-playing .ipa-symbol__play-icon::after {
-  right: 1.75px;
-  left: auto;
+.ipa-symbol.is-playing .ipa-symbol__play-icon span:last-child,
+.letter-sound.is-playing .ipa-symbol__play-icon span:last-child {
+  top: 2.25px;
+  left: 7px;
+  height: 5.5px;
+  animation-delay: -80ms;
 }
 
 @keyframes ipa-spin {
   to {
     transform: rotate(360deg);
+  }
+}
+
+@keyframes ipa-audio-pulse {
+  0%,
+  100% {
+    transform: scaleY(0.62);
+  }
+
+  50% {
+    transform: scaleY(1);
   }
 }
 
