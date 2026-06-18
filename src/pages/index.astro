@@ -131,17 +131,49 @@ const filterRows = [
   { label: '辅音筛选', groups: [mannerFilterGroup, voicingFilterGroup] },
 ] satisfies readonly { label: string; groups: readonly FilterGroup[] }[]
 
-const cx = (...classes: string[]) => classes.join(' ')
+const cx = (...classes: string[]) => classes.filter(Boolean).join(' ')
 
 const panelClass = 'rounded-ipa border border-rule bg-panel shadow-ipa'
-const filterButtonClass =
-  "ipa-filter min-h-8.5 cursor-pointer touch-manipulation rounded-full border border-rule bg-filter-bg px-3.25 py-1.25 text-filter leading-compact text-muted transition-[background-color,border-color,color] duration-150 ease-in-out hover:border-rule-hover hover:bg-filter-hover hover:text-text focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring [&[aria-pressed='true']]:border-filter-selected-border [&[aria-pressed='true']]:bg-accent-soft [&[aria-pressed='true']]:font-bold [&[aria-pressed='true']]:text-accent"
-const letterButtonClass =
-  "letter-tab flex size-9 cursor-pointer touch-manipulation items-center justify-center rounded-full border border-rule bg-filter-bg font-mono text-filter leading-none font-bold text-muted transition-[background-color,border-color,color] duration-150 ease-in-out hover:border-rule-hover hover:bg-filter-hover hover:text-text focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring [&[aria-pressed='true']]:border-filter-selected-border [&[aria-pressed='true']]:bg-accent-soft [&[aria-pressed='true']]:text-accent"
-const letterSoundButtonClass =
-  'letter-sound group/sound relative flex min-h-19 cursor-pointer touch-manipulation flex-col items-start justify-between gap-2 rounded-lg border border-rule bg-symbol-bg px-3.5 py-3 text-left text-text transition-[background-color,border-color,color] duration-150 ease-in-out hover:border-rule-hover hover:bg-symbol-hover active:bg-symbol-active focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring disabled:cursor-default disabled:opacity-100 disabled:hover:border-rule disabled:hover:bg-symbol-bg [&.is-loading]:border-symbol-loading-border [&.is-loading]:bg-symbol-loading-bg [&.is-loading]:text-accent [&.is-playing]:border-symbol-playing-border [&.is-playing]:bg-symbol-playing-bg [&.is-playing]:text-accent'
+const focusRingClass =
+  'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring'
+const colorTransitionClass =
+  'transition-[background-color,border-color,color] duration-150 ease-in-out'
+const filterControlSurfaceClass = cx(
+  'border border-rule bg-filter-bg text-muted',
+  colorTransitionClass,
+  'hover:border-rule-hover hover:bg-filter-hover hover:text-text',
+  focusRingClass,
+)
+const pressedFilterClass =
+  "[&[aria-pressed='true']]:border-filter-selected-border [&[aria-pressed='true']]:bg-accent-soft [&[aria-pressed='true']]:font-semibold [&[aria-pressed='true']]:text-accent"
+const symbolStateClass =
+  '[&.is-loading]:border-symbol-loading-border [&.is-loading]:bg-symbol-loading-bg [&.is-loading]:text-accent [&.is-playing]:border-symbol-playing-border [&.is-playing]:bg-symbol-playing-bg [&.is-playing]:text-accent'
+const eyebrowClass = 'font-mono text-group-eyebrow font-semibold tracking-[0.08em] text-faint'
+const settingLabelClass = 'font-semibold whitespace-nowrap text-faint'
+const playIndicatorClass = cx(
+  'ipa-symbol__play relative inline-flex size-5 flex-none items-center justify-center rounded-full border border-play-border text-faint',
+  colorTransitionClass,
+)
+const filterButtonClass = cx(
+  'ipa-filter inline-flex min-h-8.5 cursor-pointer touch-manipulation items-center rounded-full px-3.25 py-1.25 text-filter leading-compact',
+  filterControlSurfaceClass,
+  pressedFilterClass,
+)
+const letterButtonClass = cx(
+  'letter-tab flex size-9 cursor-pointer touch-manipulation items-center justify-center rounded-full font-mono text-filter leading-none font-semibold',
+  filterControlSurfaceClass,
+  pressedFilterClass,
+)
+const letterSoundButtonClass = cx(
+  'letter-sound group/sound relative flex min-h-19 cursor-pointer touch-manipulation flex-col items-start justify-between gap-2 rounded-lg border border-rule bg-symbol-bg px-3.5 py-3 text-left text-text',
+  colorTransitionClass,
+  'hover:border-rule-hover hover:bg-symbol-hover active:bg-symbol-active',
+  focusRingClass,
+  'disabled:cursor-default disabled:opacity-100 disabled:hover:border-rule disabled:hover:bg-symbol-bg',
+  symbolStateClass,
+)
 const letterKindBadgeClass =
-  'rounded-full border border-rule bg-filter-bg px-2 py-0.5 text-filter-label leading-none font-bold whitespace-nowrap text-faint'
+  'rounded-full border border-rule bg-filter-bg px-2 py-0.5 text-filter-label leading-none font-semibold whitespace-nowrap text-faint'
 type PhoneticCategory = (typeof phoneticCategories)[number]
 const getGroupLayoutClass = (category: PhoneticCategory) => {
   switch (category) {
@@ -153,10 +185,18 @@ const getGroupLayoutClass = (category: PhoneticCategory) => {
       return 'col-span-full'
   }
 }
-const symbolButtonClass =
-  'ipa-symbol group/symbol relative inline-flex min-h-9 w-full cursor-pointer touch-manipulation items-center justify-start gap-2 rounded-lg border border-rule bg-symbol-bg px-3.5 py-1 text-text transition-[background-color,border-color,color] duration-150 ease-in-out hover:border-rule-hover hover:bg-symbol-hover active:bg-symbol-active focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring [&.is-loading]:border-symbol-loading-border [&.is-loading]:bg-symbol-loading-bg [&.is-loading]:text-accent [&.is-playing]:border-symbol-playing-border [&.is-playing]:bg-symbol-playing-bg [&.is-playing]:text-accent'
-const symbolWrapperButtonClass =
-  'min-h-8 cursor-pointer touch-manipulation px-3 py-1 text-filter leading-compact text-muted transition-[background-color,color] duration-150 ease-in-out hover:bg-filter-hover hover:text-text focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring'
+const symbolButtonClass = cx(
+  'ipa-symbol group/symbol relative inline-flex min-h-9 w-full cursor-pointer touch-manipulation items-center justify-start gap-1.5 rounded-lg border border-rule bg-symbol-bg px-2.5 py-1 text-text',
+  colorTransitionClass,
+  'hover:border-rule-hover hover:bg-symbol-hover active:bg-symbol-active',
+  focusRingClass,
+  symbolStateClass,
+)
+const symbolWrapperButtonClass = cx(
+  'h-full min-h-0 cursor-pointer touch-manipulation px-3 py-0 text-filter leading-none text-muted',
+  'transition-[background-color,color] duration-150 ease-in-out hover:bg-filter-hover hover:text-text',
+  focusRingClass,
+)
 const repeatOptions = [1, 2, 3, 4, 5]
 const currentYear = new Date().getFullYear()
 ---
@@ -196,7 +236,7 @@ const currentYear = new Date().getFullYear()
         aria-labelledby="page-title"
       >
         <div>
-          <p class="mb-2.5 font-mono text-kicker font-bold tracking-[0.08em] text-accent uppercase">
+          <p class="mb-2.5 font-mono text-kicker font-semibold tracking-[0.08em] text-accent">
             pronunciation notes
           </p>
           <h1 id="page-title" class="m-0 text-hero leading-hero font-hero tracking-normal">
@@ -245,9 +285,9 @@ const currentYear = new Date().getFullYear()
         </p>
         <div class="flex flex-none flex-wrap items-center gap-3">
           <div class="inline-flex items-center gap-2 text-filter text-muted">
-            <span class="font-bold whitespace-nowrap text-faint">展示</span>
+            <span class={settingLabelClass}>展示</span>
             <div
-              class="inline-flex overflow-hidden rounded-full border border-rule bg-filter-bg"
+              class="inline-flex h-[var(--control-height)] overflow-hidden rounded-full border border-rule bg-filter-bg"
               role="group"
               aria-label="音标括号显示"
             >
@@ -272,11 +312,16 @@ const currentYear = new Date().getFullYear()
             </div>
           </div>
           <label class="inline-flex items-center gap-2 text-filter text-muted">
-            <span class="font-bold whitespace-nowrap text-faint">循环</span>
+            <span class={settingLabelClass}>循环</span>
             <span class="group/repeat relative inline-flex items-center">
               <select
                 id="repeat-count"
-                class="h-8 cursor-pointer appearance-none rounded-full border border-rule bg-filter-bg py-1 pr-8 pl-3 leading-compact text-text outline-none transition-[background-color,border-color] duration-150 ease-in-out hover:border-rule-hover hover:bg-filter-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+                class={cx(
+                  'h-[var(--control-height)] cursor-pointer appearance-none rounded-full border border-rule bg-filter-bg py-0 pr-8 pl-3 leading-none text-text outline-none',
+                  colorTransitionClass,
+                  'hover:border-rule-hover hover:bg-filter-hover',
+                  focusRingClass,
+                )}
                 aria-label="每个音标自动循环播放次数"
               >
                 {repeatOptions.map((count) => <option value={count}>{count} 次</option>)}
@@ -294,11 +339,7 @@ const currentYear = new Date().getFullYear()
           class="mb-3.5 flex items-end justify-between gap-4 border-b border-rule pb-3 max-ipa-phone:flex-col max-ipa-phone:items-start"
         >
           <div>
-            <p
-              class="mb-1 font-mono text-group-eyebrow font-bold tracking-[0.08em] text-faint uppercase"
-            >
-              letter sounds
-            </p>
+            <p class={cx('mb-1', eyebrowClass)}>letter sounds</p>
             <h2 id="letter-pronunciation-title" class="m-0 text-group-title leading-compact">
               字母读音
             </h2>
@@ -363,7 +404,7 @@ const currentYear = new Date().getFullYear()
                     <span class="flex w-full items-baseline justify-between gap-3">
                       <span class="flex min-w-0 items-baseline gap-2">
                         <span
-                          class="font-ipa-symbol text-symbol leading-symbol font-bold tracking-normal"
+                          class="font-ipa-symbol text-symbol leading-symbol inline-flex flex-none items-center whitespace-nowrap font-bold tracking-normal"
                           data-symbol-text
                         >
                           <span data-symbol-text-bracket>{item.symbolDisplay}</span>
@@ -378,7 +419,12 @@ const currentYear = new Date().getFullYear()
                         </span>
                       </span>
                       {item.audio ? (
-                        <span class="ipa-symbol__play relative inline-flex size-5 flex-none items-center justify-center rounded-full border border-play-border text-faint transition-[background-color,border-color,color] duration-150 ease-in-out group-hover/sound:border-current group-hover/sound:text-current">
+                        <span
+                          class={cx(
+                            playIndicatorClass,
+                            'group-hover/sound:border-current group-hover/sound:text-current',
+                          )}
+                        >
                           <span class="ipa-symbol__play-icon" />
                         </span>
                       ) : (
@@ -429,7 +475,7 @@ const currentYear = new Date().getFullYear()
                     role="group"
                     aria-label={`按${group.ariaLabel ?? group.label}筛选`}
                   >
-                    <span class="flex-none text-filter-label leading-compact font-bold whitespace-nowrap text-faint max-ipa-tablet:basis-auto max-ipa-tablet:text-left">
+                    <span class="flex-none text-filter-label leading-compact font-semibold whitespace-nowrap text-faint max-ipa-tablet:basis-auto max-ipa-tablet:text-left">
                       {group.label}
                     </span>
                     <div class="flex min-w-0 flex-wrap gap-2">
@@ -475,10 +521,7 @@ const currentYear = new Date().getFullYear()
               >
                 <header class="mb-3.5 flex items-baseline justify-between gap-3.5 border-b border-rule pb-2.5">
                   <div>
-                    <p
-                      class="mb-1 font-mono text-group-eyebrow font-bold tracking-[0.08em] text-faint uppercase"
-                      data-eyebrow
-                    >
+                    <p class={cx('mb-1', eyebrowClass)} data-eyebrow>
                       {label.eyebrow}
                     </p>
                     <h2
@@ -501,10 +544,10 @@ const currentYear = new Date().getFullYear()
                         class="pointer-events-none absolute inset-x-1 top-0 flex items-start gap-1 overflow-hidden"
                         aria-hidden="true"
                       >
-                        <span class="min-w-0 flex-1 overflow-hidden font-sans text-[0.55rem] leading-none font-bold tracking-normal text-ellipsis whitespace-nowrap text-faint opacity-70">
+                        <span class="min-w-0 flex-1 overflow-hidden font-sans text-[0.62rem] leading-none font-semibold tracking-normal text-ellipsis whitespace-nowrap text-faint opacity-75">
                           {item.sourceLabel}
                         </span>
-                        <span class="ml-auto max-w-full shrink-0 overflow-hidden font-sans text-[0.58rem] leading-none font-normal tracking-normal text-ellipsis whitespace-nowrap text-muted opacity-65">
+                        <span class="ml-auto max-w-full shrink-0 overflow-hidden font-sans text-[0.62rem] leading-none font-normal tracking-normal text-ellipsis whitespace-nowrap text-muted opacity-70">
                           {item.letters}
                         </span>
                       </div>
@@ -525,13 +568,16 @@ const currentYear = new Date().getFullYear()
                         title={`播放 ${item.symbolDisplay}，${item.sourceLabel}，常见拼写 ${item.letters}`}
                       >
                         <span
-                          class="ipa-symbol__play relative inline-flex size-5 flex-none translate-y-px items-center justify-center rounded-full border border-play-border text-faint transition-[background-color,border-color,color] duration-150 ease-in-out group-hover/symbol:border-current group-hover/symbol:text-current"
+                          class={cx(
+                            playIndicatorClass,
+                            'translate-y-px group-hover/symbol:border-current group-hover/symbol:text-current',
+                          )}
                           aria-hidden="true"
                         >
                           <span class="ipa-symbol__play-icon" />
                         </span>
                         <span
-                          class="font-ipa-symbol text-symbol leading-symbol inline-flex h-5 min-w-0 flex-initial items-center text-center font-bold tracking-normal"
+                          class="font-ipa-symbol text-symbol leading-symbol inline-flex min-h-5 min-w-8 flex-1 items-center justify-center whitespace-nowrap text-center font-bold tracking-normal"
                           data-symbol-text
                         >
                           <span data-symbol-text-bracket>{item.symbolDisplay}</span>
@@ -670,8 +716,12 @@ const currentYear = new Date().getFullYear()
         return value === 'slash' ? 'slash' : 'bracket'
       }
 
+      function formatSymbolWithWrapper(symbolCore: string, wrapper: SymbolWrapper) {
+        return wrapper === 'bracket' ? `[${symbolCore}]` : `/${symbolCore}/`
+      }
+
       function formatSymbol(symbolCore: string) {
-        return symbolWrapper === 'bracket' ? `[${symbolCore}]` : `/${symbolCore}/`
+        return formatSymbolWithWrapper(symbolCore, symbolWrapper)
       }
 
       function getButtonSymbol(button: HTMLButtonElement) {
@@ -705,10 +755,18 @@ const currentYear = new Date().getFullYear()
 
       function updateButtonSymbol(button: HTMLButtonElement) {
         const symbol = getButtonSymbol(button)
+        const symbolCore = button.dataset.symbolCore
         const symbolText = button.querySelector<HTMLElement>('[data-symbol-text]')
+        const bracketText = button.querySelector<HTMLElement>('[data-symbol-text-bracket]')
+        const slashText = button.querySelector<HTMLElement>('[data-symbol-text-slash]')
 
         button.dataset.symbol = symbol
-        if (symbolText) symbolText.textContent = symbol
+        if (symbolCore && bracketText && slashText) {
+          bracketText.textContent = formatSymbolWithWrapper(symbolCore, 'bracket')
+          slashText.textContent = formatSymbolWithWrapper(symbolCore, 'slash')
+        } else if (symbolText) {
+          symbolText.textContent = symbol
+        }
         updateButtonLabel(button, symbol)
       }
 
