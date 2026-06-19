@@ -221,20 +221,8 @@ const currentYear = new Date().getFullYear()
     </script>
 
     <title>音标有谱</title>
-    <style>
-      body { opacity: 0; transition: opacity .15s ease; }
-      body.fonts-ready { opacity: 1; }
-    </style>
   </head>
   <body>
-    <script is:inline>
-      document.fonts.ready.then(function() {
-        document.body.classList.add('fonts-ready');
-      });
-      setTimeout(function() {
-        document.body.classList.add('fonts-ready');
-      }, 800);
-    </script>
     <main
       class="ipa-shell mx-auto flex min-h-screen w-ipa-shell flex-col pt-8.5 pb-7 max-ipa-tablet:w-ipa-shell-tablet max-ipa-tablet:pt-5.5"
     >
