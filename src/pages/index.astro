@@ -8,6 +8,7 @@ import {
 } from '@/data/phoneticSymbols'
 import type { LetterPronunciationKind } from '@/data/phoneticSymbols'
 import '@/styles/global.css'
+import 'lxgw-wenkai-screen-webfont/style.css'
 
 const getSymbolCore = (symbol: string) =>
   symbol.startsWith('[') && symbol.endsWith(']') ? symbol.slice(1, -1) : symbol
@@ -218,13 +219,7 @@ const currentYear = new Date().getFullYear()
         // Keep the static default when storage is unavailable.
       }
     </script>
-    <link
-      rel="preload"
-      href="/fonts/LXGWWenKaiScreen-subset.woff2"
-      as="font"
-      type="font/woff2"
-      crossorigin
-    />
+
     <title>音标有谱</title>
   </head>
   <body>
