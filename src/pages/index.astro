@@ -8,7 +8,7 @@ import {
 } from '@/data/phoneticSymbols'
 import type { LetterPronunciationKind } from '@/data/phoneticSymbols'
 import '@/styles/global.css'
-import 'lxgw-wenkai-screen-webfont/lxgwwenkaiscreen.css'
+import '@/styles/lxgw-wenkai-screen.css'
 
 const getSymbolCore = (symbol: string) =>
   symbol.startsWith('[') && symbol.endsWith(']') ? symbol.slice(1, -1) : symbol
