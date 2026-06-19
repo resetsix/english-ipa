@@ -1,12 +1,5 @@
 @import 'tailwindcss';
-
-@font-face {
-  font-family: 'LXGW WenKai Screen';
-  src: url('/fonts/LXGWWenKaiScreen-subset.woff2') format('woff2');
-  font-style: normal;
-  font-weight: 400;
-  font-display: block;
-}
+@import url("https://npm.elemecdn.com/lxgw-wenkai-screen-webfont@1.1.0/style.css");
 
 :root {
   color-scheme: light;
