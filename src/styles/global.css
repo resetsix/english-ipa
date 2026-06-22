@@ -274,3 +274,18 @@ html[data-symbol-wrapper='slash'] [data-symbol-wrapper-option='slash'] {
     transition-duration: 1ms !important;
   }
 }
+
+/* Scroll Reveal Animations */
+@media (prefers-reduced-motion: no-preference) {
+  .reveal {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  
+  .reveal.is-revealed {
+    opacity: 1;
+    transform: translateY(0);
+    transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1),
+                transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+}

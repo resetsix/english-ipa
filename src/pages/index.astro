@@ -134,7 +134,7 @@ const filterRows = [
 
 const cx = (...classes: string[]) => classes.filter(Boolean).join(' ')
 
-const panelClass = 'rounded-ipa border border-rule bg-panel shadow-ipa'
+const panelClass = 'reveal rounded-ipa border border-rule bg-panel shadow-ipa'
 const focusRingClass =
   'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring'
 const colorTransitionClass =
@@ -1088,6 +1088,20 @@ const currentYear = new Date().getFullYear()
         clearActive()
         setErrorStatus('音频加载失败，请确认本地音频文件存在')
       })
+
+      // Intersection Observer for scroll reveal animations
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add('is-revealed')
+              observer.unobserve(entry.target)
+            }
+          })
+        },
+        { rootMargin: '0px 0px -50px 0px', threshold: 0.05 },
+      )
+      document.querySelectorAll('.reveal').forEach((el) => observer.observe(el))
     </script>
   </body>
 </html>
