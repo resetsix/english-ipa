@@ -5,8 +5,10 @@
   "type": "module",
   "scripts": {
     "dev": "astro dev",
-    "build": "astro build",
+    "build": "node scripts/font-chars.mjs --check && astro build",
     "preview": "astro preview",
+    "font:subset": "node scripts/font-chars.mjs && uv run scripts/subset-font.py",
+    "font:check": "node scripts/font-chars.mjs --check",
     "format:check": "prettier --check ."
   },
   "dependencies": {

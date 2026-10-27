@@ -9,6 +9,7 @@ import {
 import type { LetterPronunciationKind } from '@/data/phoneticSymbols'
 import '@/styles/global.css'
 import '@/styles/lxgw-wenkai-screen.css'
+import pageFontUrl from '@/assets/fonts/lxgwwenkaiscreen-page.woff2?url'
 
 const getSymbolCore = (symbol: string) =>
   symbol.startsWith('[') && symbol.endsWith(']') ? symbol.slice(1, -1) : symbol
@@ -207,6 +208,7 @@ const currentYear = new Date().getFullYear()
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="preload" href={pageFontUrl} as="font" type="font/woff2" crossorigin />
     <meta
       name="description"
       content="音标有谱：英语48个音标试听页，按元音、辅音、长短音、发音方式和清浊分类筛选。"

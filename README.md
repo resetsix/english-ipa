@@ -31,3 +31,13 @@ pnpm dev
 pnpm build
 pnpm preview
 ```
+
+## 字体
+
+页面只加载一个霞鹜文楷 Screen 子集（`src/assets/fonts/lxgwwenkaiscreen-page.woff2`），只包含 `src/` 里用到的字符。修改页面文案后运行：
+
+```bash
+pnpm font:subset # 需要 uv，首次会下载上游完整字体到 .cache/
+```
+
+`pnpm build` 会先检查子集是否覆盖所有字符，缺字时直接报错。
