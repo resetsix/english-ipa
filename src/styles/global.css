@@ -158,6 +158,25 @@ html[data-symbol-wrapper='slash'] [data-symbol-wrapper-option='slash'] {
   background: var(--danger);
 }
 
+.ipa-status[data-state='playing'] .status-dot {
+  background: var(--accent);
+}
+
+.ipa-status .status-dot {
+  transition: background-color 240ms ease;
+}
+
+#status-text {
+  transition:
+    opacity 160ms ease,
+    transform 160ms ease;
+}
+
+#status-text.is-swapping {
+  opacity: 0;
+  transform: translateY(3px);
+}
+
 .ipa-symbol__play-icon {
   position: relative;
   display: block;

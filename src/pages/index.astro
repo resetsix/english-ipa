@@ -676,9 +676,15 @@ const currentYear = new Date().getFullYear()
       let symbolWrapper: SymbolWrapper = 'bracket'
       const repeatStorageKey = 'english-ipa-repeat-count'
       const symbolWrapperStorageKey = 'english-ipa-symbol-wrapper'
+      const idleStatusText = '选择一个音标开始播放'
       // Narrowest a symbol card can be without its content overflowing; keep in sync with
       // the --container-ipa-symbols-* fallbacks in global.css.
       const symbolCardMinWidth = 88
+      const statusSwapMs = 160
+      const statusIdleDelayMs = 1200
+      let statusTargetText = statusText?.textContent ?? idleStatusText
+      let statusSwapTimer = 0
+      let statusIdleTimer = 0
 
       const filterRules = {
         all: { field: 'all', value: 'all', useDefaultHeading: true },
@@ -736,6 +742,7 @@ const currentYear = new Date().getFullYear()
       type FilterId = keyof typeof filterRules
       type ClientFilterField = (typeof filterRules)[FilterId]['field']
       type SymbolWrapper = 'bracket' | 'slash'
+      type StatusState = 'idle' | 'playing' | 'error'
 
       function getValidSymbolWrapper(value: unknown): SymbolWrapper {
         return value === 'slash' ? 'slash' : 'bracket'
@@ -834,14 +841,35 @@ const currentYear = new Date().getFullYear()
         }
       }
 
-      function resetStatus() {
-        if (statusText) statusText.textContent = '选择一个音标开始播放'
-        if (status) status.dataset.state = 'idle'
+      // Fade the old text out before swapping; rapid calls only swap to the latest text.
+      function setStatus(text: string, state: StatusState) {
+        window.clearTimeout(statusIdleTimer)
+        if (status) status.dataset.state = state
+        if (!statusText || text === statusTargetText) return
+
+        statusTargetText = text
+        if (statusSwapTimer) return
+
+        statusText.classList.add('is-swapping')
+        statusSwapTimer = window.setTimeout(() => {
+          statusSwapTimer = 0
+          statusText.textContent = statusTargetText
+          statusText.classList.remove('is-swapping')
+        }, statusSwapMs)
+      }
+
+      function resetStatus(delay = 0) {
+        window.clearTimeout(statusIdleTimer)
+        if (delay === 0) {
+          setStatus(idleStatusText, 'idle')
+          return
+        }
+        // Keep the last sound on screen briefly so the text doesn't snap back the moment audio ends.
+        statusIdleTimer = window.setTimeout(() => setStatus(idleStatusText, 'idle'), delay)
       }
 
       function setErrorStatus(text: string) {
-        if (statusText) statusText.textContent = text
-        if (status) status.dataset.state = 'error'
+        setStatus(text, 'error')
       }
 
       function setPlayingStatus(button: HTMLButtonElement) {
@@ -849,12 +877,11 @@ const currentYear = new Date().getFullYear()
         const letter = button.dataset.letterSound
         const examples = button.dataset.examples
 
-        if (!statusText) return
         if (letter && examples) {
-          statusText.textContent = `${letter} 发 ${symbol}：${examples}`
+          setStatus(`${letter} 发 ${symbol}：${examples}`, 'playing')
           return
         }
-        statusText.textContent = `正在播放 ${symbol}`
+        setStatus(`正在播放 ${symbol}`, 'playing')
       }
 
       function clearActive() {
@@ -1045,7 +1072,7 @@ const currentYear = new Date().getFullYear()
         button.classList.add('is-loading')
         button.setAttribute('aria-pressed', 'true')
         player.src = audio
-        resetStatus()
+        setPlayingStatus(button)
 
         try {
           await player.play()
@@ -1118,7 +1145,7 @@ const currentYear = new Date().getFullYear()
 
         if (activeRepeatIndex >= repeatCount) {
           clearActive()
-          resetStatus()
+          resetStatus(statusIdleDelayMs)
           activeRepeatIndex = 0
           return
         }
