@@ -611,23 +611,26 @@ const currentYear = new Date().getFullYear()
       </section>
 
       <footer
-        class="text-footer mt-auto flex justify-center pt-7 pb-2.5 text-muted max-ipa-tablet:pt-5.5 max-ipa-tablet:pb-2"
+        class="text-footer mt-auto flex flex-wrap items-center justify-between gap-x-6 gap-y-1.5 pt-7 pb-2.5 text-muted max-ipa-tablet:pt-5.5 max-ipa-tablet:pb-2 max-ipa-phone:flex-col max-ipa-phone:items-start"
       >
-        <div class="inline-flex flex-col items-start gap-1.5 text-left">
-          <span>音标有谱 · 英语 48 个音标</span>
-          <span class="inline-flex flex-wrap gap-2">
-            <span>词词有据 ·</span>
+        <span class="inline-flex flex-wrap items-center gap-x-2">
+          <span>音标有谱 · 48 个音标</span>
+          <span aria-hidden="true">·</span>
+          <span>
+            词词有据
             <a
               class="font-bold text-accent"
               href="https://english-roots.netlify.app"
               target="_blank"
               rel="noreferrer"
             >
-              english-roots.netlify.app
+              english-roots
             </a>
           </span>
-          <span class="inline-flex flex-wrap gap-2">
-            <span>本项目仅用于学习目的，音频内容版权归原网站所有。</span>
+        </span>
+        <span class="inline-flex flex-wrap items-center gap-x-2">
+          <span title="本项目仅用于学习目的，音频内容版权归原网站所有。">
+            音频来源
             <a
               class="font-bold text-accent"
               href="https://www.yyybabc.com/"
@@ -637,10 +640,11 @@ const currentYear = new Date().getFullYear()
               yyybabc.com
             </a>
           </span>
-          <span class="inline-flex flex-wrap gap-2">
-            <span>©{currentYear} 未有期. All rights reserved.</span>
-          </span>
-        </div>
+          <span aria-hidden="true">·</span>
+          <span>仅供学习</span>
+          <span aria-hidden="true">·</span>
+          <span>©{currentYear} 未有期</span>
+        </span>
       </footer>
     </main>
 
