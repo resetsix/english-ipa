@@ -180,11 +180,23 @@ type PhoneticCategory = (typeof phoneticCategories)[number]
 const getGroupLayoutClass = (category: PhoneticCategory) => {
   switch (category) {
     case 'monophthong':
-      return 'col-span-7 max-ipa-tablet:col-span-full'
+      return 'col-span-7 data-solo:col-span-full max-ipa-tablet:col-span-full'
     case 'diphthong':
-      return 'col-span-5 max-ipa-tablet:col-span-full'
+      return 'col-span-5 data-solo:col-span-full max-ipa-tablet:col-span-full'
     case 'consonant':
       return 'col-span-full'
+  }
+}
+// Pre-script fallback matching what layoutSymbolGrid() picks for the unfiltered counts
+// (12 = 6×2 / 4×3 / 3×4, 8 = 4×2 / 2×4, 28 = 7×4 / 4×7 / 3×10).
+const getSymbolGridClass = (category: PhoneticCategory) => {
+  switch (category) {
+    case 'monophthong':
+      return 'grid-cols-3 @ipa-symbols-4:grid-cols-4 @ipa-symbols-6:grid-cols-6'
+    case 'diphthong':
+      return 'grid-cols-2 @ipa-symbols-4:grid-cols-4'
+    case 'consonant':
+      return 'grid-cols-3 @ipa-symbols-4:grid-cols-4 @ipa-symbols-7:grid-cols-7'
   }
 }
 const symbolButtonClass = cx(
@@ -512,7 +524,7 @@ const currentYear = new Date().getFullYear()
                   `ipa-group ipa-group--${category}`,
                   panelClass,
                   getGroupLayoutClass(category),
-                  'p-4.5',
+                  '@container p-4.5',
                 )}
                 aria-labelledby={`${category}-title`}
                 data-category={category}
@@ -538,7 +550,7 @@ const currentYear = new Date().getFullYear()
                   </span>
                 </header>
 
-                <div class="grid grid-cols-ipa-symbols gap-2.75 max-ipa-tablet:grid-cols-ipa-symbols-tablet max-ipa-phone:grid-cols-ipa-symbols-phone">
+                <div class={cx('ipa-symbol-grid grid gap-2.75', getSymbolGridClass(category))}>
                   {items.map((item) => (
                     <div class="ipa-symbol-shell relative pt-2.75">
                       <div
@@ -648,6 +660,7 @@ const currentYear = new Date().getFullYear()
       )
       const letterPanels = Array.from(document.querySelectorAll<HTMLElement>('.letter-panel'))
       const groups = Array.from(document.querySelectorAll<HTMLElement>('.ipa-group'))
+      const symbolGrids = Array.from(document.querySelectorAll<HTMLElement>('.ipa-symbol-grid'))
       const repeatSelect = document.querySelector<HTMLSelectElement>('#repeat-count')
       const symbolWrapperButtons = Array.from(
         document.querySelectorAll<HTMLButtonElement>('[data-symbol-wrapper-option]'),
@@ -659,6 +672,9 @@ const currentYear = new Date().getFullYear()
       let symbolWrapper: SymbolWrapper = 'bracket'
       const repeatStorageKey = 'english-ipa-repeat-count'
       const symbolWrapperStorageKey = 'english-ipa-symbol-wrapper'
+      // Narrowest a symbol card can be without its content overflowing; keep in sync with
+      // the --container-ipa-symbols-* fallbacks in global.css.
+      const symbolCardMinWidth = 88
 
       const filterRules = {
         all: { field: 'all', value: 'all', useDefaultHeading: true },
@@ -973,6 +989,40 @@ const currentYear = new Date().getFullYear()
           updateGroupHeading(group, filter)
           if (count) count.textContent = `${visibleCount} 个`
         })
+
+        // A vowel group left alone on its row takes the full width instead of 7/12 or 5/12.
+        const vowelGroups = groups.filter((group) => group.dataset.family === 'vowel')
+        const isSoloVowelGroup = vowelGroups.filter((group) => !group.hidden).length === 1
+        vowelGroups.forEach((group) => group.toggleAttribute('data-solo', isSoloVowelGroup))
+        symbolGrids.forEach(layoutSymbolGrid)
+      }
+
+      // Pick a column count that fits the width and avoids a ragged last row:
+      // fewest rows first (an incomplete row counts as one extra), then fewest empty slots.
+      function getSymbolColumns(count: number, maxColumns: number) {
+        let best = { columns: 1, score: Infinity, emptySlots: Infinity }
+
+        for (let columns = Math.min(count, maxColumns); columns >= 1; columns -= 1) {
+          const rows = Math.ceil(count / columns)
+          const emptySlots = rows * columns - count
+          const score = rows + (emptySlots > 0 ? 1 : 0)
+          if (score < best.score || (score === best.score && emptySlots < best.emptySlots)) {
+            best = { columns, score, emptySlots }
+          }
+        }
+        return best.columns
+      }
+
+      function layoutSymbolGrid(grid: HTMLElement) {
+        const count = grid.querySelectorAll(':scope > .ipa-symbol-shell:not([hidden])').length
+        if (count === 0 || grid.clientWidth === 0) return
+
+        const gap = Number.parseFloat(getComputedStyle(grid).columnGap) || 0
+        const maxColumns = Math.max(
+          1,
+          Math.floor((grid.clientWidth + gap) / (symbolCardMinWidth + gap)),
+        )
+        grid.style.gridTemplateColumns = `repeat(${getSymbolColumns(count, maxColumns)}, minmax(0, 1fr))`
       }
 
       async function playSymbol(button: HTMLButtonElement) {
@@ -1042,6 +1092,14 @@ const currentYear = new Date().getFullYear()
 
       repeatSelect?.addEventListener('change', () => {
         setRepeatCount(repeatSelect.value)
+      })
+
+      const symbolGridObserver = new ResizeObserver((entries) => {
+        entries.forEach((entry) => layoutSymbolGrid(entry.target as HTMLElement))
+      })
+      symbolGrids.forEach((grid) => {
+        layoutSymbolGrid(grid)
+        symbolGridObserver.observe(grid)
       })
 
       setSymbolWrapper(loadSymbolWrapper(), false)

@@ -76,6 +76,10 @@
   --grid-template-columns-ipa-symbols: repeat(auto-fill, minmax(88px, 1fr));
   --grid-template-columns-ipa-symbols-tablet: repeat(auto-fill, minmax(88px, 1fr));
   --grid-template-columns-ipa-symbols-phone: repeat(auto-fill, minmax(88px, 1fr));
+  /* Grid widths where 4 / 6 / 7 symbol cards (88px min + 11px gaps) fit on one row. */
+  --container-ipa-symbols-4: 385px;
+  --container-ipa-symbols-6: 583px;
+  --container-ipa-symbols-7: 682px;
 }
 
 html {
