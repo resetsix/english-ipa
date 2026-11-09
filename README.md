@@ -1,6 +1,6 @@
 # 音标有谱
 
-[在线预览](https://english-ipa.netlify.app)
+<a href="https://english-ipa.netlify.app" target="_blank" rel="noopener noreferrer">在线预览</a>
 
 > 为英语初学者准备的音标点读站点，共计 48 个音标。
 
