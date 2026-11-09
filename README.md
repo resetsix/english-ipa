@@ -2,9 +2,9 @@
 
 [在线预览](https://english-ipa.netlify.app)
 
-A phonetic symbol click-and-listen site for English beginners, featuring 48 phonemes in total.
+> 为英语初学者准备的音标点读站点，共计 48 个音标。
 
-为英语初学者准备的音标点读站点，共计 48 个音标。
+![首页预览](./public/home.png)
 
 ## 功能
 
